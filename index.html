@@ -3,178 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Snake: Advanced Edition</title>
+    <title>Project V1</title>
     <style>
-        body {
-            background-color: #0d47a1; color: white; font-family: 'Arial Black', sans-serif;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden;
-        }
-        .main-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; }
-        .game-container { display: flex; gap: 30px; align-items: flex-start; position: relative; transition: all 0.5s ease; }
-        .help-icon, .skin-icon, .mode-icon {
-            position: absolute; top: -40px; width: 30px; height: 30px;
-            background: #00e5ff; color: #001a33; border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; font-size: 18px; box-shadow: 0 0 10px #00e5ff;
-            transition: 0.3s; z-index: 20;
-        }
-        .help-icon { right: 0; } .skin-icon { right: 40px; } .mode-icon { right: 80px; }
-        .toggle-container { position: absolute; top: -45px; left: 0; display: flex; align-items: center; gap: 10px; font-size: 10px; z-index: 30; }
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; border: 1px solid white; }
-        .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #00e676; box-shadow: 0 0 10px #00e676; }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .overlay-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 26, 51, 0.98); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-sizing: border-box; }
-        .page-content { max-width: 600px; border: 2px solid #00e5ff; padding: 30px; border-radius: 15px; background: rgba(0,0,0,0.4); text-align: center;}
-        .page-title { color: #00e5ff; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid white; padding-bottom: 10px; }
-        .instr-section { margin-bottom: 15px; font-size: 14px; line-height: 1.4; border-left: 3px solid #00e5ff; padding-left: 10px; text-align: left;}
-        .mode-grid { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
-        .mode-btn { padding: 15px; border: 3px solid white; border-radius: 12px; cursor: pointer; transition: 0.3s; width: 110px; background: rgba(255,255,255,0.05); }
-        .mode-btn.active { background: #00e5ff; color: #001a33; }
-        .skin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
-        .skin-opt { width: 60px; height: 60px; border-radius: 10px; border: 3px solid white; cursor: pointer; transition: 0.2s; }
-        .upgrade-panel { width: 240px; height: 500px; background: #001a33; border: 3px solid white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; transition: all 0.5s; transform-origin: left; }
-        .upgrade-panel.hidden { width: 0; padding: 0; margin-right: -30px; border: 0; opacity: 0; pointer-events: none; transform: scaleX(0); }
-        .upgrade-title { font-size: 16px; border-bottom: 2px solid white; margin-bottom: 10px; text-align: center; }
-        #upgrade-list { overflow-y: auto; flex-grow: 1; }
-        .upgrade-item { background: rgba(255,255,255,0.05); margin-bottom: 10px; padding: 10px; border-radius: 8px; border: 2px solid transparent; font-size: 12px;}
-        .upgrade-item.affordable { border-color: #ffeb3b; cursor: pointer; }
-        .upgrade-item.purchased { background: #2e7d32; border-color: #ffffff; }
-        .canvas-area { position: relative; width: 400px; height: 400px; }
-        canvas { border: 5px solid white; background-color: #001a33; outline: none; }
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 10; cursor: pointer; text-align: center; font-size: 20px; }
-        .sidebar { width: 180px; text-align: center; background: #1565c0; border: 2px solid white; border-radius: 10px; padding: 15px; }
-        .stat-value { font-size: 24px; margin-bottom: 10px; color: #00e5ff; }
-        .currency-value { color: #ffeb3b; }
-        button { background: white; color: #0d47a1; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px; }
-        .save-btn { background: #00e676; } .load-btn { background: #ffeb3b; }
-        .hidden-stats { display: none; }
+        body { background: #001a33; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .game-wrapper { position: relative; border: 4px solid #00e5ff; box-shadow: 0 0 20px #00e5ff; }
+        canvas { display: block; background: #000; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; z-index: 10; }
+        .ui-icons { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; z-index: 20; }
+        .icon { background: #00e5ff; color: #000; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; }
+        .stats { position: absolute; bottom: -50px; left: 0; width: 100%; display: flex; justify-content: space-between; font-size: 18px; color: #00e5ff; }
+        .menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #001a33; border: 2px solid #00e5ff; padding: 20px; display: none; z-index: 100; text-align: center; }
     </style>
 </head>
 <body>
 
-<div id="instructions-page" class="overlay-page"><div class="page-content"><div class="page-title">MANUAL</div><div class="instr-section">Arrows to move. Use icons for Modes and Skins.</div><button onclick="togglePage('instructions-page')">BACK</button></div></div>
-<div id="skin-page" class="overlay-page"><div class="page-content"><div class="page-title">SKINS</div><div class="skin-grid" id="skin-grid"></div><button onclick="togglePage('skin-page')">CANCEL</button></div></div>
-<div id="mode-page" class="overlay-page"><div class="page-content"><div class="page-title">MODES</div><div class="mode-grid"><div id="btn-classic" class="mode-btn active" onclick="selectMode('classic')">CLASSIC</div><div id="btn-ghost" class="mode-btn" onclick="selectMode('ghost')">GHOST</div><div id="btn-zen" class="mode-btn" onclick="selectMode('zen')">ZEN</div></div><button onclick="togglePage('mode-page')">CANCEL</button></div></div>
-
-<div class="main-wrapper">
-    <div class="toggle-container"><span>LAB</span><label class="switch"><input type="checkbox" id="labToggle" checked onchange="toggleLabMode()"><span class="slider"></span></label></div>
-    <div class="game-container">
-        <div class="mode-icon" onclick="togglePage('mode-page')">🌐</div><div class="skin-icon" onclick="togglePage('skin-page')">🐍</div><div class="help-icon" onclick="togglePage('instructions-page')">?</div>
-        <div class="upgrade-panel" id="labPanel"><div class="upgrade-title">🔬 LAB</div><div id="upgrade-list"></div></div>
-        <div style="text-align:center;"><h1 id="game-title">🐍 CYBER SNAKE</h1><div class="canvas-area"><div id="overlay" onclick="startGame()">CLICK TO PLAY</div><canvas id="snakeGame" width="400" height="400"></canvas></div></div>
-        <div class="sidebar">
-            <div>ROUND</div><div id="round-score" class="stat-value">0</div>
-            <div id="currency-section"><div>TOTAL</div><div id="score" class="stat-value currency-value">0</div></div>
-            <button class="save-btn" onclick="saveToFile()">SAVE</button>
-            <button class="load-btn" onclick="document.getElementById('fileInput').click()">LOAD</button>
-            <input type="file" id="fileInput" style="display:none" onchange="loadFromFile(event)">
+<div class="game-wrapper">
+    <div class="ui-icons">
+        <div class="icon" onclick="alert('Ghost Mode: Wrap through walls!')">🌐</div>
+        <div class="icon" onclick="alert('Skins: Change your look!')">🐍</div>
+    </div>
+    <div id="overlay" onclick="startGame()">
+        <h1>🐍 CYBER SNAKE</h1>
+        <p>CLICK TO START</p>
+        <p style="font-size: 12px;">(Use Arrow Keys to Move)</p>
+    </div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="stats">
+        <span>Score: <span id="score">0</span></span>
+        <div>
+            <button onclick="saveGame()">Save</button>
+            <button onclick="loadGame()">Load</button>
         </div>
     </div>
 </div>
 
 <script>
-    const canvas = document.getElementById("snakeGame");
+    const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
-    const overlay = document.getElementById("overlay");
+    const scoreEl = document.getElementById("score");
     const box = 20;
-    let snake, foods, direction, score = 0, roundScore = 0, gameRunning = false, isGameOver = false;
-    let snakeColor = "#00e5ff", foodColor = "#ffeb3b", gameMode = "classic", currentFoodTier = -1;
+    let snake, food, d, score, game;
 
-    const foodUpgrades = [
-        { name: "Neon Cherry", cost: 10, value: 5, color: "#ff1744" },
-        { name: "Cyber Apple", cost: 50, value: 20, color: "#00e676" },
-        { name: "Data Chip", cost: 200, value: 100, color: "#ffffff" }
-    ].map((u, i) => ({ ...u, id: i, purchased: false }));
-
-    function togglePage(id) { document.getElementById(id).style.display = (document.getElementById(id).style.display === "flex") ? "none" : "flex"; }
-    function selectMode(m) { gameMode = m; document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-'+m).classList.add('active'); togglePage('mode-page'); }
-    function toggleLabMode() { 
-        const isChecked = document.getElementById("labToggle").checked;
-        document.getElementById("labPanel").classList.toggle("hidden", !isChecked);
-        document.getElementById("currency-section").classList.toggle("hidden-stats", !isChecked);
+    function startGame() {
+        document.getElementById("overlay").style.display = "none";
+        snake = [{ x: 9 * box, y: 10 * box }];
+        food = { x: Math.floor(Math.random() * 19 + 1) * box, y: Math.floor(Math.random() * 19 + 1) * box };
+        score = 0;
+        d = "RIGHT";
+        if (game) clearInterval(game);
+        game = setInterval(draw, 100);
     }
 
-    function startGame() { overlay.style.display = "none"; resetGame(); gameRunning = true; }
-    function resetGame() {
-        snake = [{x: 10*box, y: 10*box}];
-        foods = [{x: 5*box, y: 5*box}];
-        direction = "RIGHT"; roundScore = 0; isGameOver = false;
-        updateUI(); loop();
+    document.addEventListener("keydown", direction);
+    function direction(event) {
+        if(event.keyCode == 37 && d != "RIGHT") d = "LEFT";
+        else if(event.keyCode == 38 && d != "DOWN") d = "UP";
+        else if(event.keyCode == 39 && d != "LEFT") d = "RIGHT";
+        else if(event.keyCode == 40 && d != "UP") d = "DOWN";
     }
 
-    window.addEventListener("keydown", e => {
-        if(e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-        if(e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-        if(e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-        if(e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
-    });
+    function draw() {
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    function loop() {
-        if(!gameRunning || isGameOver) return;
-        setTimeout(() => {
-            let hX = snake[0].x, hY = snake[0].y;
-            if(direction === "LEFT") hX -= box; if(direction === "RIGHT") hX += box;
-            if(direction === "UP") hY -= box; if(direction === "DOWN") hY += box;
+        for(let i = 0; i < snake.length; i++) {
+            ctx.fillStyle = (i == 0) ? "#00e5ff" : "white";
+            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+            ctx.strokeStyle = "black";
+            ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+        }
 
-            if(gameMode === "classic") {
-                if(hX < 0 || hX >= 400 || hY < 0 || hY >= 400) { isGameOver = true; overlay.style.display = "flex"; return; }
-            } else {
-                if(hX < 0) hX = 380; else if(hX >= 400) hX = 0;
-                if(hY < 0) hY = 380; else if(hY >= 400) hY = 0;
-            }
+        ctx.fillStyle = "#ff1744";
+        ctx.fillRect(food.x, food.y, box, box);
 
-            if(gameMode !== "zen" && snake.some(s => s.x === hX && s.y === hY)) { isGameOver = true; overlay.style.display = "flex"; return; }
+        let snakeX = snake[0].x;
+        let snakeY = snake[0].y;
 
-            const newHead = {x: hX, y: hY};
-            if(hX === foods[0].x && hY === foods[0].y) {
-                let val = currentFoodTier === -1 ? 1 : foodUpgrades[currentFoodTier].value;
-                score += val; roundScore++;
-                foods = [{x: Math.floor(Math.random()*19+1)*box, y: Math.floor(Math.random()*19+1)*box}];
-            } else { snake.pop(); }
-            snake.unshift(newHead);
-            render(); updateUI(); loop();
-        }, 100);
+        if( d == "LEFT") snakeX -= box;
+        if( d == "UP") snakeY -= box;
+        if( d == "RIGHT") snakeX += box;
+        if( d == "DOWN") snakeY += box;
+
+        if(snakeX == food.x && snakeY == food.y) {
+            score++;
+            scoreEl.innerHTML = score;
+            food = { x: Math.floor(Math.random() * 19 + 1) * box, y: Math.floor(Math.random() * 19 + 1) * box };
+        } else {
+            snake.pop();
+        }
+
+        let newHead = { x: snakeX, y: snakeY };
+
+        if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
+            clearInterval(game);
+            document.getElementById("overlay").style.display = "flex";
+            document.querySelector("#overlay h1").innerHTML = "GAME OVER";
+        }
+
+        snake.unshift(newHead);
     }
 
-    function render() {
-        ctx.fillStyle = "#001a33"; ctx.fillRect(0,0,400,400);
-        ctx.fillStyle = foodColor; ctx.fillRect(foods[0].x, foods[0].y, box, box);
-        snake.forEach((s, i) => { ctx.fillStyle = i === 0 ? "white" : snakeColor; ctx.fillRect(s.x, s.y, box, box); });
+    function collision(head, array) {
+        for(let i = 0; i < array.length; i++) {
+            if(head.x == array[i].x && head.y == array[i].y) return true;
+        }
+        return false;
     }
 
-    function updateUI() {
-        document.getElementById("score").innerText = score;
-        document.getElementById("round-score").innerText = roundScore;
-        const list = document.getElementById("upgrade-list"); list.innerHTML = "";
-        foodUpgrades.forEach(u => {
-            const d = document.createElement("div"); d.className = `upgrade-item ${u.purchased ? 'purchased' : (score >= u.cost ? 'affordable' : '')}`;
-            d.innerHTML = `${u.name} - ${u.purchased ? 'OWNED' : u.cost}`;
-            if(!u.purchased && score >= u.cost) d.onclick = () => { score -= u.cost; u.purchased = true; currentFoodTier = u.id; foodColor = u.color; updateUI(); };
-            list.appendChild(d);
-        });
+    function saveGame() {
+        localStorage.setItem("snakeScore", score);
+        alert("Progress Saved!");
     }
 
-    function saveToFile() {
-        const data = JSON.stringify({score, snakeColor, gameMode});
-        const blob = new Blob([data], {type: "application/json"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "save.json"; a.click();
+    function loadGame() {
+        const savedScore = localStorage.getItem("snakeScore");
+        if (savedScore) {
+            score = parseInt(savedScore);
+            scoreEl.innerHTML = score;
+            alert("Loaded Score: " + savedScore);
+        }
     }
-
-    function loadFromFile(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => { const d = JSON.parse(ev.target.result); score = d.score; snakeColor = d.snakeColor; selectMode(d.gameMode); updateUI(); };
-        reader.readAsText(e.target.files[0]);
-    }
-
-    // Init Skins
-    ["#00e5ff", "#ff1744", "#ffeb3b", "#00e676"].forEach(c => {
-        const d = document.createElement("div"); d.className = "skin-opt"; d.style.background = c;
-        d.onclick = () => { snakeColor = c; togglePage('skin-page'); };
-        document.getElementById("skin-grid").appendChild(d);
-    });
 </script>
 </body>
 </html>
