@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Snake: Advanced Edition</title>
+    <style>
+        body {
+            background-color: #0d47a1; color: white; font-family: 'Arial Black', sans-serif;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden;
+        }
+
+        .main-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; }
+        .game-container { display: flex; gap: 30px; align-items: flex-start; position: relative; transition: all 0.5s ease; }
+
+        /* Icons */
+        .help-icon, .skin-icon, .mode-icon {
+            position: absolute; top: -40px; width: 30px; height: 30px;
+            background: #00e5ff; color: #001a33; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 18px; box-shadow: 0 0 10px #00e5ff;
+            transition: 0.3s; z-index: 20;
+        }
+        .help-icon { right: 0; }
+        .skin-icon { right: 40px; }
+        .mode-icon { right: 80px; }
+        .help-icon:hover, .skin-icon:hover, .mode-icon:hover { transform: scale(1.1); background: white; }
+
+        /* LAB TOGGLE */
+        .toggle-container {
+            position: absolute; top: -45px; left: 0; display: flex; align-items: center; gap: 10px;
+            font-size: 10px; letter-spacing: 1px; z-index: 30;
+        }
+        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333; transition: .4s; border-radius: 20px; border: 1px solid white;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #00e676; box-shadow: 0 0 10px #00e676; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Overlay Pages */
+        .overlay-page {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 26, 51, 0.98); z-index: 100;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 40px; box-sizing: border-box;
+        }
+        .page-content { max-width: 600px; border: 2px solid #00e5ff; padding: 30px; border-radius: 15px; background: rgba(0,0,0,0.4); text-align: center;}
+        .page-title { color: #00e5ff; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid white; padding-bottom: 10px; }
+        
+        .instr-section { margin-bottom: 15px; font-size: 14px; line-height: 1.4; border-left: 3px solid #00e5ff; padding-left: 10px; text-align: left;}
+
+        .mode-grid { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+        .mode-btn {
+            padding: 15px; border: 3px solid white; border-radius: 12px; cursor: pointer;
+            transition: 0.3s; width: 110px; background: rgba(255,255,255,0.05);
+        }
+        .mode-btn:hover { border-color: #00e5ff; transform: translateY(-5px); }
+        .mode-btn.active { background: #00e5ff; color: #001a33; border-color: white; }
+
+        .skin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }
+        .skin-opt {
+            width: 60px; height: 60px; border-radius: 10px; border: 3px solid white;
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+
+        .upgrade-panel {
+            width: 240px; height: 500px; background: #001a33; border: 3px solid white;
+            border-radius: 12px; padding: 15px; display: flex; flex-direction: column;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: left; opacity: 1;
+        }
+        .upgrade-panel.hidden {
+            width: 0; padding: 0; margin-right: -30px; border: 0; opacity: 0; pointer-events: none; transform: scaleX(0);
+        }
+
+        .upgrade-title { font-size: 16px; border-bottom: 2px solid white; margin-bottom: 10px; text-align: center; padding-bottom: 5px; white-space: nowrap;}
+        #upgrade-list { overflow-y: auto; flex-grow: 1; padding-right: 5px; scrollbar-width: thin; scrollbar-color: #00e5ff #001a33; }
+
+        .upgrade-item {
+            background: rgba(255,255,255,0.05); margin-bottom: 10px; padding: 12px;
+            border-radius: 8px; border: 2px solid transparent; transition: 0.3s;
+        }
+        .upgrade-item.redacted { background: black; border-color: #333; filter: blur(2px); pointer-events: none; }
+        .upgrade-item.locked { opacity: 0.6; border-color: rgba(255,255,255,0.1); }
+        .upgrade-item.affordable { border-color: #ffeb3b; cursor: pointer; }
+        .upgrade-item.purchased { background: #2e7d32; border-color: #ffffff; pointer-events: none; }
+
+        .canvas-area { position: relative; width: 400px; height: 400px; }
+        canvas { border: 5px solid white; background-color: #001a33; box-shadow: 0 0 30px rgba(0, 229, 255, 0.4); outline: none; }
+
+        #overlay {
+            position: absolute; top: 0; left: 0; width: 410px; height: 410px;
+            background: rgba(0,0,0,0.8); display: flex; justify-content: center;
+            align-items: center; z-index: 10; cursor: pointer; border-radius: 5px;
+            text-align: center; padding: 20px; box-sizing: border-box;
+        }
+
+        .sidebar { width: 180px; text-align: center; background: #1565c0; border: 2px solid white; border-radius: 10px; padding: 15px; }
+        .stat-value { font-size: 24px; margin-bottom: 10px; color: #00e5ff; }
+        .currency-value { color: #ffeb3b; }
+
+        button { background: white; color: #0d47a1; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-family: 'Arial Black'; margin-bottom: 8px; font-size: 12px;}
+        .save-btn { background: #00e676; color: black; }
+        .load-btn { background: #ffeb3b; color: black; }
+        .back-btn { background: #ff1744; color: white; margin-top: 20px; width: auto; padding: 10px 30px; }
+        .hidden-stats { opacity: 0; height: 0; margin: 0; overflow: hidden; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div id="instructions-page" class="overlay-page">
+   <div class="page-content">
+       <div class="page-title">OPERATIONAL MANUAL</div>
+       <div class="instr-section"><b>🐍 NAVIGATION:</b> Use Arrow Keys. Eat food to grow.</div>
+       <div class="instr-section"><b>🌐 MODES:</b> Classic (Fatal walls), Ghost (Wrap), Zen (No death).</div>
+       <div class="instr-section"><b>🔬 LAB:</b> Toggle to hide Total Points and upgrades.</div>
+       <button class="back-btn" onclick="togglePage('instructions-page')">← BACK</button>
+   </div>
+</div>
+
+<div id="skin-page" class="overlay-page">
+   <div class="page-content">
+       <div class="page-title">EVOLUTION CHAMBER</div>
+       <div class="skin-grid" id="skin-grid"></div>
+       <button class="back-btn" onclick="togglePage('skin-page')">← CANCEL</button>
+   </div>
+</div>
+
+<div id="mode-page" class="overlay-page">
+   <div class="page-content">
+       <div class="page-title">TRANSCENDENCE HUB</div>
+       <div class="mode-grid">
+           <div id="btn-classic" class="mode-btn active" onclick="selectMode('classic')">⛔ CLASSIC</div>
+           <div id="btn-ghost" class="mode-btn" onclick="selectMode('ghost')">👻 GHOST</div>
+           <div id="btn-zen" class="mode-btn" onclick="selectMode('zen')">🧘 ZEN</div>
+       </div>
+       <button class="back-btn" onclick="togglePage('mode-page')">← CANCEL</button>
+   </div>
+</div>
+
+<div class="main-wrapper">
+   <div class="toggle-container">
+       <span>LAB</span>
+       <label class="switch">
+           <input type="checkbox" id="labToggle" checked onchange="toggleLabMode()">
+           <span class="slider"></span>
+       </label>
+   </div>
+
+   <div class="game-container">
+       <div class="mode-icon" onclick="togglePage('mode-page')">🌐</div>
+       <div class="skin-icon" onclick="togglePage('skin-page')">🐍</div>
+       <div class="help-icon" onclick="togglePage('instructions-page')">?</div>
+
+       <div class="upgrade-panel" id="labPanel">
+           <div class="upgrade-title">🔬 CLASSIFIED LAB</div>
+           <div id="upgrade-list"></div>
+       </div>
+
+       <div style="text-align:center;">
+           <h1 id="game-title" style="text-shadow: 0 0 10px #00e5ff;">🐍 CYBER SNAKE</h1>
+           <div class="canvas-area">
+               <div id="overlay" onclick="startGame()">CLICK TO PLAY</div>
+               <canvas id="snakeGame" width="400" height="400"></canvas>
+           </div>
+       </div>
+
+       <div class="sidebar">
+           <div>ROUND</div><div id="round-score" class="stat-value">0</div>
+           <div id="currency-section">
+               <div>TOTAL</div><div id="score" class="stat-value currency-value">0</div>
+           </div>
+           <button class="save-btn" onclick="saveToFile()">SAVE</button>
+           <button class="load-btn" onclick="document.getElementById('fileInput').click()">LOAD</button>
+           <input type="file" id="fileInput" style="display:none" onchange="loadFromFile(event)">
+       </div>
+   </div>
+</div>
+
+<script>
+    // [The rest of your logic remains the same - copy the script section from your original code here]
+    // Note: Ensure all script functions like startGame, updateLogic, and render are included.
+</script>
+</body>
+</html>
