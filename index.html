@@ -81,26 +81,10 @@
     letter-spacing: 0.04em;
     margin-top: 0.3rem;
   }
-
-  /* Core Layout Engine for Main Content + Debug Panel */
-  .workspace-layout {
-    display: flex;
-    gap: 1.5rem;
-    width: 100%;
-    max-width: 1100px;
-    align-items: flex-start;
-    justify-content: center;
-  }
  
-  .solver-container {
-    flex: 1;
-    max-width: 720px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
   .solver-card {
+    width: 100%;
+    max-width: 720px;
     background: var(--bg1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -112,39 +96,13 @@
     border-bottom: 1px solid var(--border);
   }
  
-  .input-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.6rem;
-  }
-
   .input-label {
     font-size: 0.78rem;
     font-weight: 500;
     color: var(--text2);
     letter-spacing: 0.08em;
     text-transform: uppercase;
-  }
-
-  .solve-for-container {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    color: var(--text1);
-  }
-
-  .solve-for-select {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    color: var(--accent);
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
-    font-family: var(--mono);
-    font-weight: 600;
-    outline: none;
-    cursor: pointer;
+    margin-bottom: 0.6rem;
   }
  
   .input-row {
@@ -339,81 +297,6 @@
  
   .error-box.visible { display: block; }
  
-  /* Debug Panel Sidebar styling */
-  .debug-panel {
-    width: 320px;
-    background: var(--bg1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    display: none; /* Only visible when result is ready */
-    flex-direction: column;
-    gap: 1rem;
-    animation: modal-in 0.2s ease;
-  }
-
-  .debug-panel.visible {
-    display: flex;
-  }
-
-  .debug-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--red);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .debug-desc {
-    font-size: 0.85rem;
-    color: var(--text1);
-    line-height: 1.4;
-  }
-
-  .debug-textarea {
-    width: 100%;
-    height: 90px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.6rem;
-    font-family: var(--sans);
-    font-size: 0.85rem;
-    color: var(--text0);
-    outline: none;
-    resize: none;
-  }
-
-  .debug-textarea:focus {
-    border-color: var(--red);
-  }
-
-  .debug-submit-btn {
-    background: var(--red);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    padding: 0.6rem;
-    font-family: var(--sans);
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-
-  .debug-submit-btn:hover { opacity: 0.85; }
-
-  .debug-success-msg {
-    display: none;
-    font-size: 0.82rem;
-    color: var(--green);
-    text-align: center;
-    margin-top: 0.2rem;
-  }
-
   /* Spinner */
   .spinner {
     display: none;
@@ -764,7 +647,8 @@
 </head>
 <body>
  
-<div id="passcode-overlay" class="hidden">
+<!-- Passcode Overlay -->
+<div id="passcode-overlay">
   <div class="passcode-card" id="passcode-card">
     <div class="passcode-icon">🔒</div>
     <h2>Enter Passcode</h2>
@@ -800,67 +684,42 @@
   <p class="subtitle">Step-by-step solutions · Any Algebra 1 problem</p>
 </header>
  
-<div class="workspace-layout">
-  
-  <div class="solver-container">
-    <div class="solver-card">
-      <div class="input-area">
-        <div class="input-header-row">
-          <div class="input-label">Enter your problem</div>
-          <div class="solve-for-container">
-            <span>Solve for:</span>
-            <select id="solve-for-var" class="solve-for-select">
-              <option value="x">x</option>
-              <option value="y">y</option>
-              <option value="z">z</option>
-              <option value="a">a</option>
-              <option value="b">b</option>
-            </select>
-          </div>
+<div class="solver-card">
+  <div class="input-area">
+    <div class="input-label">Enter your problem</div>
+    <div class="input-row">
+      <input id="eq-input" type="text" placeholder="e.g.  2x + 5 = 13  or  x² - 9 = 0" autocomplete="off" spellcheck="false" />
+      <button id="solve-btn" onclick="handleSolve()">Solve →</button>
+    </div>
+    <div class="examples-row" id="examples-row"></div>
+  </div>
+  <div class="result-area">
+    <div class="result-placeholder" id="placeholder">Enter a problem above and press Solve.</div>
+    <div class="spinner" id="spinner"></div>
+    <div class="error-box" id="error-box"></div>
+    <div class="result-block" id="result-block">
+      <div class="result-type-badge"><span class="dot"></span><span id="result-type-label">Linear Equation</span></div>
+      <ul class="steps-list" id="steps-list"></ul>
+      <div class="answer-box">
+        <div>
+          <div class="answer-label">Answer</div>
+          <div class="answer-value" id="answer-value"></div>
         </div>
-        <div class="input-row">
-          <input id="eq-input" type="text" placeholder="e.g.  2x + 5 = 13  or  x² - 9 = 0" autocomplete="off" spellcheck="false" />
-          <button id="solve-btn" onclick="handleSolve()">Solve →</button>
-        </div>
-        <div class="examples-row" id="examples-row"></div>
-      </div>
-      <div class="result-area">
-        <div class="result-placeholder" id="placeholder">Enter a problem above and press Solve.</div>
-        <div class="spinner" id="spinner"></div>
-        <div class="error-box" id="error-box"></div>
-        <div class="result-block" id="result-block">
-          <div class="result-type-badge"><span class="dot"></span><span id="result-type-label">Linear Equation</span></div>
-          <ul class="steps-list" id="steps-list"></ul>
-          <div class="answer-box">
-            <div>
-              <div class="answer-label">Answer</div>
-              <div class="answer-value" id="answer-value"></div>
-            </div>
-            <button class="copy-answer-btn" onclick="copyAnswer()">Copy</button>
-          </div>
-        </div>
+        <button class="copy-answer-btn" onclick="copyAnswer()">Copy</button>
       </div>
     </div>
-    
-    <div class="history-section" id="history-section" style="display:none;">
-      <div class="history-header">
-        <span class="history-title">Recent Problems</span>
-        <button class="clear-history-btn" onclick="clearHistory()">Clear all</button>
-      </div>
-      <div class="history-list" id="history-list"></div>
-    </div>
   </div>
-
-  <div class="debug-panel" id="debug-panel">
-    <div class="debug-title">⚠️ Report Wrong Solution</div>
-    <p class="debug-desc">Did the algebra engine calculate a bad step or wrong final value? Log it here for testing adjustments.</p>
-    <textarea id="debug-notes" class="debug-textarea" placeholder="Describe what went wrong (e.g., 'Step 3 distributed the negative incorrectly')"></textarea>
-    <button class="debug-submit-btn" onclick="submitBugReport()">Submit Bug Report</button>
-    <div id="debug-success" class="debug-success-msg">Bug saved to log tracker! ✓</div>
-  </div>
-
 </div>
  
+<div class="history-section" id="history-section" style="display:none;">
+  <div class="history-header">
+    <span class="history-title">Recent Problems</span>
+    <button class="clear-history-btn" onclick="clearHistory()">Clear all</button>
+  </div>
+  <div class="history-list" id="history-list"></div>
+</div>
+ 
+<!-- Ambiguity Modal -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <h2>What should I do with this?</h2>
@@ -875,10 +734,34 @@
 </div>
  
 <script>
-// Mock Logic for demonstration execution to fit your app architecture
-const EXAMPLES = ['2x + 5 = 13', 'x² - 5x + 6 = 0', '3(x - 2) = 15', '|2x - 4| = 8', 'y = 2x + 3', '2x + y = 10, x - y = 2', '4x - 2 > 10'];
+const EXAMPLES = [
+  '2x + 5 = 13',
+  'x² - 5x + 6 = 0',
+  '3(x - 2) = 15',
+  '|2x - 4| = 8',
+  'y = 2x + 3',
+  '2x + y = 10, x - y = 2',
+  'x/3 + 4 = 7',
+  '√(x + 4) = 5',
+  'x² = 49',
+  '4x - 2 > 10'
+];
+ 
+const MODAL_OPTIONS = [
+  { id: 'solve', label: 'Solve for x' },
+  { id: 'simplify', label: 'Simplify' },
+  { id: 'factor', label: 'Factor' },
+  { id: 'expand', label: 'Expand' },
+  { id: 'graph', label: 'Find slope/intercept' },
+  { id: 'system', label: 'Solve as system' },
+  { id: 'inequality', label: 'Solve inequality' },
+  { id: 'evaluate', label: 'Evaluate expression' },
+];
+ 
+let history = JSON.parse(localStorage.getItem('alg1_history') || '[]');
+let selectedModalOptions = new Set();
 let currentInput = '';
-
+ 
 // Build examples chips
 const row = document.getElementById('examples-row');
 EXAMPLES.forEach(ex => {
@@ -891,75 +774,1037 @@ EXAMPLES.forEach(ex => {
   };
   row.appendChild(chip);
 });
-
+ 
+// Build modal options
+const grid = document.getElementById('options-grid');
+MODAL_OPTIONS.forEach(opt => {
+  const label = document.createElement('label');
+  label.className = 'option-check';
+  label.dataset.id = opt.id;
+  label.innerHTML = `
+    <input type="checkbox" value="${opt.id}" />
+    <div class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <span class="option-label">${opt.label}</span>`;
+  label.onclick = (e) => {
+    e.preventDefault();
+    label.classList.toggle('selected');
+    if (label.classList.contains('selected')) selectedModalOptions.add(opt.id);
+    else selectedModalOptions.delete(opt.id);
+  };
+  grid.appendChild(label);
+});
+ 
 document.getElementById('eq-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') handleSolve();
 });
  
-function handleSolve() {
-  const raw = document.getElementById('eq-input').value.trim();
-  const targetedVar = document.getElementById('solve-for-var').value;
-  if (!raw) return;
-  currentInput = raw;
-  
-  // Hide previous debug state
-  document.getElementById('debug-panel').classList.remove('visible');
-  document.getElementById('debug-success').style.display = 'none';
-  document.getElementById('debug-notes').value = '';
-
+function showError(msg) {
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('result-block').classList.remove('visible');
+  const eb = document.getElementById('error-box');
+  eb.textContent = msg;
+  eb.classList.add('visible');
+}
+ 
+function showResult(typeLabel, steps, answer) {
+  document.getElementById('placeholder').style.display = 'none';
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('error-box').classList.remove('visible');
+  document.getElementById('result-type-label').textContent = typeLabel;
+  const ul = document.getElementById('steps-list');
+  ul.innerHTML = '';
+  steps.forEach((step, i) => {
+    const li = document.createElement('li');
+    li.className = 'step-item';
+    li.innerHTML = `<div class="step-num">${i+1}</div><div class="step-text">${step}</div>`;
+    ul.appendChild(li);
+  });
+  document.getElementById('answer-value').textContent = answer;
+  document.getElementById('result-block').classList.add('visible');
+  addHistory(currentInput, answer);
+}
+ 
+function showSpinner() {
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('result-block').classList.remove('visible');
   document.getElementById('spinner').style.display = 'block';
-
+}
+ 
+function handleSolve() {
+  const raw = document.getElementById('eq-input').value.trim();
+  if (!raw) return;
+  currentInput = raw;
+  showSpinner();
   setTimeout(() => {
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('result-type-label').textContent = "Algebraic Expression";
-    
-    const ul = document.getElementById('steps-list');
-    ul.innerHTML = `
-      <li class="step-item"><div class="step-num">1</div><div class="step-text">Targeting solution isolated specifically for variable: <span class="step-math">${targetedVar}</span></div></li>
-      <li class="step-item"><div class="step-num">2</div><div class="step-text">Parsing structural terms for expression: <span class="step-math">${raw}</span></div></li>
-      <li class="step-item"><div class="step-num">3</div><div class="step-text">Clearing structures and verifying coefficients...</div></li>
-    `;
-    
-    document.getElementById('answer-value').textContent = `${targetedVar} = 4/5`;
-    document.getElementById('result-block').classList.add('visible');
-    
-    // Reveal the brand new report bug panel on the right side!
-    document.getElementById('debug-panel').classList.add('visible');
-  }, 400);
+    try {
+      const result = solveAuto(raw);
+      if (result === 'AMBIGUOUS') {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('placeholder').style.display = 'none';
+        openModal(raw);
+      } else {
+        showResult(result.type, result.steps, result.answer);
+      }
+    } catch(e) {
+      showError('Could not parse: ' + e.message);
+    }
+  }, 220);
 }
-
-function submitBugReport() {
-  const notes = document.getElementById('debug-notes').value.trim();
-  const equation = currentInput;
-  const targetVariable = document.getElementById('solve-for-var').value;
-  
-  // Package data to store in local memory log array
-  const report = {
-    equation: equation,
-    targetVariable: targetVariable,
-    issue: notes || "Unspecified calculation error",
-    timestamp: new Date().toISOString()
+ 
+// ─── BUG 2 FIX: Rational equation pre-processor ──────────────────────────────
+// Detects variable-in-denominator fractions, finds LCD, clears denominators,
+// then hands the simplified linear/quadratic equation to the normal solvers.
+function hasVariableDenominator(s) {
+  // Look for /(...x...) or /expression-containing-x
+  return /\/\s*[^\s+\-=*\/]*x[^\s+\-=*\/]*/i.test(s) ||
+         /\/\s*\([^)]*x[^)]*\)/i.test(s);
+}
+ 
+function parseRationalTerms(s) {
+  // Split equation into LHS and RHS
+  const eqIdx = s.indexOf('=');
+  if (eqIdx === -1) return null;
+  const lhs = s.slice(0, eqIdx);
+  const rhs = s.slice(eqIdx + 1);
+ 
+  // Parse each side into rational terms: [{num: string, den: string}]
+  function parseSideTerms(side) {
+    // Normalise: ensure terms start with sign
+    let norm = side.replace(/\s/g,'');
+    if (norm[0] !== '+' && norm[0] !== '-') norm = '+' + norm;
+ 
+    const terms = [];
+    // Split on top-level + and - (not inside parens)
+    let depth = 0, start = 0;
+    for (let i = 0; i < norm.length; i++) {
+      if (norm[i] === '(') depth++;
+      else if (norm[i] === ')') depth--;
+      else if ((norm[i] === '+' || norm[i] === '-') && depth === 0 && i > 0) {
+        terms.push(norm.slice(start, i));
+        start = i;
+      }
+    }
+    terms.push(norm.slice(start));
+ 
+    return terms.map(term => {
+      term = term.replace(/^\+/, '');
+      const slashIdx = term.indexOf('/');
+      if (slashIdx === -1) return { num: term, den: '1' };
+      return { num: term.slice(0, slashIdx), den: term.slice(slashIdx + 1) };
+    });
+  }
+ 
+  return {
+    lhsTerms: parseSideTerms(lhs),
+    rhsTerms: parseSideTerms(rhs)
   };
-  
-  let bugLogs = JSON.parse(localStorage.getItem('alg1_bug_reports') || '[]');
-  bugLogs.push(report);
-  localStorage.setItem('alg1_bug_reports', JSON.stringify(bugLogs));
-  
-  // Show confirmation animation
-  document.getElementById('debug-success').style.display = 'block';
 }
-
+ 
+function stripOuterParens(s) {
+  s = s.trim();
+  if (s[0] === '(' && s[s.length-1] === ')') return s.slice(1,-1);
+  return s;
+}
+ 
+function solveRational(raw) {
+  const s = raw.replace(/\s/g,'');
+  const parsed = parseRationalTerms(s);
+  if (!parsed) throw new Error('Could not parse rational equation');
+ 
+  const allTerms = [...parsed.lhsTerms, ...parsed.rhsTerms];
+  const allDens = allTerms.map(t => stripOuterParens(t.den));
+ 
+  // For the specific common case: denominators are (x-a), (x+b), (x^2-c)
+  // We build LCD by collecting unique denominators
+  // Detect if any denominator is a product of the others (e.g. x^2-1 = (x-1)(x+1))
+  const uniqueDens = [...new Set(allDens.filter(d => d !== '1'))];
+ 
+  // Determine LCD string for display and for expansion
+  let lcdDisplay = uniqueDens.join(' · ');
+  // For numeric computation, we'll symbolically multiply out
+  // We do this by tracking what polynomial each denominator represents
+ 
+  const steps = [
+    `Start with: <span class="step-math">${raw}</span>`,
+    `Identify denominators: <span class="step-math">${uniqueDens.join(', ')}</span>`,
+    `Find LCD = <span class="step-math">${lcdDisplay}</span>`,
+    `Multiply every term by the LCD to clear all denominators`,
+  ];
+ 
+  // Symbolically multiply: for each term, num * (LCD / den)
+  // We evaluate this by expanding the polynomial products numerically
+  // We'll use parseFlatPoly on each factor and multiply polynomials
+ 
+  function multiplyPolys(p1, p2) {
+    // p1 and p2 are {x2, x1, x0}; result may go up to x^2 for our cases
+    return {
+      x2: p1.x1*p2.x1 + p1.x2*p2.x0 + p1.x0*p2.x2,
+      x1: p1.x1*p2.x0 + p1.x0*p2.x1 + p1.x2*0, // ignoring x^3+
+      x0: p1.x0*p2.x0
+    };
+  }
+ 
+  function parseDenPoly(den) {
+    // den may be like x-1, x+1, x^2-1, or a number
+    den = den.replace(/\^2/g,'x^2'); // normalise
+    if (!den.includes('x')) return { x2:0, x1:0, x0: parseFloat(den)||1 };
+    return parseFlatPoly(den);
+  }
+ 
+  // Build LCD as a polynomial by multiplying unique denominators
+  // But only include a denominator in LCD if it's not already a multiple of others
+  // Simple approach: just multiply all unique dens together for LCD poly
+  let lcdPoly = { x2:0, x1:0, x0:1 }; // start at 1
+ 
+  // Only use the minimal set: if one den is a product of two others, just use the others
+  // Heuristic: try all subsets; for up to 3 terms, just try removing each
+  let effectiveDens = uniqueDens;
+ 
+  // Check if any den equals the expansion of product of the other two
+  if (uniqueDens.length === 3) {
+    for (let skip = 0; skip < 3; skip++) {
+      const subset = uniqueDens.filter((_,i) => i !== skip);
+      const p1 = parseDenPoly(subset[0]);
+      const p2 = parseDenPoly(subset[1]);
+      const product = multiplyPolys(p1, p2);
+      const full = parseDenPoly(uniqueDens[skip]);
+      if (Math.abs(product.x2 - full.x2) < 0.01 &&
+          Math.abs(product.x1 - full.x1) < 0.01 &&
+          Math.abs(product.x0 - full.x0) < 0.01) {
+        effectiveDens = subset;
+        lcdDisplay = subset.join(' · ') + ` [= ${uniqueDens[skip]}]`;
+        steps.splice(3, 0, `Note: <span class="step-math">${uniqueDens[skip]} = ${subset.join('·')}</span>, so LCD = <span class="step-math">${subset.join('·')}</span>`);
+        break;
+      }
+    }
+  }
+ 
+  // Build LCD poly from effective dens
+  lcdPoly = { x2:0, x1:0, x0:1 };
+  for (const den of effectiveDens) {
+    lcdPoly = multiplyPolys(lcdPoly, parseDenPoly(den));
+  }
+ 
+  // For each term, compute: numerator_poly * (LCD / denominator_poly)
+  // Division of polynomials is hard symbolically, so we check if den divides LCD exactly
+  // by just doing the multiply and seeing if it cancels cleanly
+  function polyDivide(lcdP, denP) {
+    // Returns quotient poly if exact, else null
+    if (denP.x1 === 0 && denP.x2 === 0) {
+      const k = denP.x0;
+      return { x2: lcdP.x2/k, x1: lcdP.x1/k, x0: lcdP.x0/k };
+    }
+    // quadratic / quadratic — only valid if they are identical (quotient = 1)
+    if (denP.x2 !== 0) {
+      if (Math.abs(lcdP.x2-denP.x2)<1e-9 && Math.abs(lcdP.x1-denP.x1)<1e-9 && Math.abs(lcdP.x0-denP.x0)<1e-9)
+        return { x2:0, x1:0, x0:1 };
+      return null;
+    }
+    // linear divisor dx+e into ax²+bx+c
+    if (denP.x2 === 0) {
+      const d = denP.x1, e = denP.x0;
+      const a = lcdP.x2, b = lcdP.x1, c = lcdP.x0;
+      if (Math.abs(a) < 1e-9) {
+        const q0 = b/d;
+        const rem = c - q0*e;
+        if (Math.abs(rem) < 1e-9) return { x2:0, x1:0, x0: q0 };
+        return null;
+      }
+      const q1 = a/d;
+      const r1 = b - q1*e;
+      const q0 = r1/d;
+      const rem = c - q0*e;
+      if (Math.abs(rem) < 1e-9) return { x2:0, x1:q1, x0:q0 };
+      return null;
+    }
+    return null;
+  }
+ 
+  function termSign(numStr) {
+    const s = numStr.replace(/\s/g,'');
+    return s[0] === '-' ? -1 : 1;
+  }
+ 
+  // Build new equation terms after multiplying by LCD
+  const newLhsTerms = parsed.lhsTerms.map(t => {
+    const denP = parseDenPoly(stripOuterParens(t.den));
+    const factor = polyDivide(lcdPoly, denP);
+    if (!factor) return null;
+    const numP = parseFlatPoly(t.num);
+    return multiplyPolys(numP, factor);
+  });
+ 
+  const newRhsTerms = parsed.rhsTerms.map(t => {
+    const denP = parseDenPoly(stripOuterParens(t.den));
+    const factor = polyDivide(lcdPoly, denP);
+    if (!factor) return null;
+    const numP = parseFlatPoly(t.num);
+    return multiplyPolys(numP, factor);
+  });
+ 
+  if (newLhsTerms.includes(null) || newRhsTerms.includes(null)) {
+    // Fallback: can't simplify symbolically, warn and try normal solver
+    throw new Error('Could not symbolically clear denominators');
+  }
+ 
+  // Sum both sides
+  const lhsSum = newLhsTerms.reduce(polyAdd, polyZero());
+  const rhsSum = newRhsTerms.reduce(polyAdd, polyZero());
+ 
+  const simplifiedLhs = polyToString(lhsSum);
+  const simplifiedRhs = polyToString(rhsSum);
+ 
+  steps.push(`After clearing denominators: <span class="step-math">${simplifiedLhs} = ${simplifiedRhs}</span>`);
+ 
+  // Now solve the simplified equation
+  // Move everything to LHS: LHS - RHS = 0
+  const combined = { x2: lhsSum.x2 - rhsSum.x2, x1: lhsSum.x1 - rhsSum.x1, x0: lhsSum.x0 - rhsSum.x0 };
+ 
+  if (Math.abs(combined.x2) > 1e-9) {
+    // It's quadratic — but after rational simplification it may cancel
+    // Try to factor / solve
+    const a = combined.x2, b = combined.x1, c = combined.x0;
+    const disc = b*b - 4*a*c;
+    steps.push(`Combine like terms, move all to left: <span class="step-math">${polyToString(combined)} = 0</span>`);
+    steps.push(`Use quadratic formula: discriminant = ${fmtNum(disc)}`);
+    let answer;
+    if (disc < 0) { answer = 'No real solutions'; }
+    else if (Math.abs(disc) < 1e-9) {
+      const x = -b/(2*a);
+      steps.push(`<span class="step-math">x = ${fmtNum(x)}</span>`);
+      answer = 'x = ' + fmtNum(x);
+    } else {
+      const x1 = (-b+Math.sqrt(disc))/(2*a), x2 = (-b-Math.sqrt(disc))/(2*a);
+      steps.push(`<span class="step-math">x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}</span>`);
+      // Check for extraneous solutions (denominator = 0)
+      const restrictions = uniqueDens.map(d => {
+        const dp = parseDenPoly(d);
+        if (dp.x1 !== 0) return -dp.x0/dp.x1;
+        return null;
+      }).filter(v => v !== null);
+      const valid = [x1, x2].filter(x => !restrictions.some(r => Math.abs(x-r) < 1e-9));
+      if (valid.length === 0) { answer = 'No valid solutions (extraneous)'; }
+      else if (valid.length === 1) { answer = 'x = ' + fmtNum(valid[0]); steps.push(`Check: x = ${fmtNum(valid.length===2?x2:x1)} is extraneous (makes a denominator zero)`); }
+      else { answer = `x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}`; }
+    }
+    return { type: 'Rational Equation', steps, answer };
+  }
+ 
+  // Linear after clearing
+  const a = combined.x1, b = -combined.x0;
+  steps.push(`Isolate x: <span class="step-math">${fmtNum(a)}x = ${fmtNum(b)}</span>`);
+  steps.push(`<span class="step-math">x = ${fmtNum(b)} ÷ ${fmtNum(a)} = ${fmtNum(b/a)}</span>`);
+ 
+  // Check for extraneous solutions
+  const xVal = b/a;
+  const restrictions = uniqueDens.map(d => {
+    const dp = parseDenPoly(d);
+    if (dp.x1 !== 0) return -dp.x0/dp.x1;
+    return null;
+  }).filter(v => v !== null);
+  if (restrictions.some(r => Math.abs(xVal - r) < 1e-9)) {
+    steps.push(`⚠️ x = ${fmtNum(xVal)} makes a denominator zero — extraneous solution!`);
+    return { type: 'Rational Equation', steps, answer: 'No solution (extraneous)' };
+  }
+ 
+  return { type: 'Rational Equation', steps, answer: 'x = ' + fmtNum(xVal) };
+}
+ 
+// ─── CORE SOLVER ENGINE ──────────────────────────────────────────────────────
+ 
+function solveAuto(raw) {
+  const s = raw.trim();
+ 
+  // System of equations (comma or line separated)
+  if (/,|\n|;/.test(s) && s.includes('=')) return solveSystem(s);
+ 
+  // Inequality
+  if (/[<>]/.test(s)) return solveInequality(s);
+ 
+  // Absolute value equation
+  if (/\|/.test(s) && s.includes('=')) return solveAbsValue(s);
+ 
+  // Equation (has =)
+  if (s.includes('=')) {
+    // Rational equation (variable in denominator) — check BEFORE quadratic
+    if (hasVariableDenominator(s)) return solveRational(s);
+    // Quadratic?
+    if (/x\^?2|x²/.test(s)) return solveQuadratic(s);
+    // Linear with square root
+    if (/sqrt|√/.test(s)) return solveSqrt(s);
+    // Linear
+    if (/x/.test(s)) return solveLinear(s);
+    // Numeric equation
+    return evaluateNumeric(s);
+  }
+ 
+  // Expression with no = — simplify/evaluate
+  if (/x/.test(s)) return 'AMBIGUOUS';
+  return evaluateExpression(s);
+}
+ 
+// ─── Tokenizer / basic math eval ─────────────────────────────────────────────
+function evalMath(expr) {
+  // Safe evaluator for numeric expressions
+  const cleaned = expr
+    .replace(/\^/g, '**')
+    .replace(/√\s*\(([^)]+)\)/g, 'Math.sqrt($1)')
+    .replace(/√(\d+(\.\d+)?)/g, 'Math.sqrt($1)')
+    .replace(/sqrt\s*\(([^)]+)\)/gi, 'Math.sqrt($1)')
+    .replace(/abs\s*\(([^)]+)\)/gi, 'Math.abs($1)');
+  // eslint-disable-next-line no-new-func
+  return Function('"use strict"; return (' + cleaned + ')')();
+}
+ 
+function fmtNum(n) {
+  if (!isFinite(n)) return 'undefined';
+  const r = Math.round(n * 1e10) / 1e10;
+  if (Number.isInteger(r)) return String(r);
+  // Try to express as fraction
+  const frac = toFraction(r);
+  if (frac) return frac;
+  return r.toFixed(4).replace(/\.?0+$/, '');
+}
+ 
+function toFraction(decimal) {
+  if (Math.abs(decimal) > 1000) return null;
+  for (let den = 2; den <= 100; den++) {
+    const num = Math.round(decimal * den);
+    if (Math.abs(num / den - decimal) < 1e-9) {
+      if (Math.abs(num) === Math.abs(den)) return null;
+      return num + '/' + den;
+    }
+  }
+  return null;
+}
+ 
+// ─── Linear solver ax + b = cx + d ──────────────────────────────────────────
+// parseLinear kept as thin wrapper for callers that use {a, b} shape
+function parseLinear(expr) {
+  const p = parseFlatPoly(expandParens(expr.replace(/\s/g,'')));
+  return { a: p.x1, b: p.x0 };
+}
+ 
+function solveLinear(raw) {
+  let s = raw.replace(/\s/g,'');
+  const steps = [`Start with: <span class="step-math">${raw}</span>`];
+ 
+  // Expand nested parentheses (Bug 1 fix)
+  const hasParens = s.includes('(');
+  const expanded = expandParens(s);
+  if (hasParens) {
+    // Show intermediate expansion steps
+    // Find the two sides of expanded form
+    const eqIdx = expanded.indexOf('=');
+    if (eqIdx !== -1) {
+      const expLeft = expanded.slice(0, eqIdx);
+      const expRight = expanded.slice(eqIdx+1);
+      steps.push(`Distribute/expand parentheses: <span class="step-math">${expLeft} = ${expRight}</span>`);
+    } else {
+      steps.push(`Distribute/expand parentheses: <span class="step-math">${expanded}</span>`);
+    }
+  }
+ 
+  const sides = expanded.split('=');
+  if (sides.length !== 2) throw new Error('Invalid equation');
+  const L = parseFlatPoly(sides[0]);
+  const R = parseFlatPoly(sides[1]);
+  const a = L.x1 - R.x1;
+  const b = R.x0 - L.x0;
+ 
+  if (hasParens) {
+    steps.push(`Collect like terms — move x's left, constants right`);
+  } else {
+    steps.push(`Move all <span class="step-math">x</span> terms to the left and constants to the right`);
+  }
+  steps.push(`Equation becomes: <span class="step-math">${fmtNum(a)}x = ${fmtNum(b)}</span>`);
+ 
+  if (a === 0) {
+    if (Math.abs(b) < 1e-9) return { type: 'Identity', steps: ['Both sides are equal for all x.'], answer: 'All real numbers' };
+    return { type: 'No Solution', steps: ['The equation has no solution.'], answer: 'No solution' };
+  }
+ 
+  steps.push(`Divide both sides by <span class="step-math">${fmtNum(a)}</span>`);
+  steps.push(`<span class="step-math">x = ${fmtNum(b)} ÷ ${fmtNum(a)} = ${fmtNum(b/a)}</span>`);
+  return { type: 'Linear Equation', steps, answer: 'x = ' + fmtNum(b/a) };
+}
+ 
+// ─── Polynomial term helpers ─────────────────────────────────────────────────
+// Represents a polynomial as {x2, x1, x0} coefficients
+function polyZero() { return {x2:0, x1:0, x0:0}; }
+ 
+function polyAdd(a, b) { return {x2:a.x2+b.x2, x1:a.x1+b.x1, x0:a.x0+b.x0}; }
+ 
+function polyScale(p, k) { return {x2:p.x2*k, x1:p.x1*k, x0:p.x0*k}; }
+ 
+function polyToString(p) {
+  let s = '';
+  if (p.x2 !== 0) s += (p.x2===1?'':p.x2===-1?'-':fmtNum(p.x2)) + 'x²';
+  if (p.x1 !== 0) {
+    if (s && p.x1 > 0) s += '+';
+    s += (p.x1===1?'':p.x1===-1?'-':fmtNum(p.x1)) + 'x';
+  }
+  if (p.x0 !== 0) {
+    if (s && p.x0 > 0) s += '+';
+    s += fmtNum(p.x0);
+  }
+  return s || '0';
+}
+ 
+// Parse a flat (no-paren) expression string into a polynomial object
+function parseFlatPoly(expr) {
+  let e = expr.replace(/\s/g,'');
+  // normalise: prepend coeff 1 where missing before x
+  e = e.replace(/([+\-])x/g,'$11x').replace(/^x/,'1x').replace(/^\+x/,'+1x');
+  const result = polyZero();
+  const tokens = e.match(/[+\-]?[^+\-]+/g) || [];
+  tokens.forEach(tok => {
+    tok = tok.replace(/\s/g,'');
+    if (!tok) return;
+    if (tok.includes('x^2') || tok.includes('x²')) {
+      const c = tok.replace('x^2','').replace('x²','');
+      result.x2 += c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0;
+    } else if (tok.includes('x')) {
+      const c = tok.replace('x','');
+      result.x1 += c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0;
+    } else {
+      result.x0 += parseFloat(tok)||0;
+    }
+  });
+  return result;
+}
+ 
+// ─── BUG 1 FIX: Nested parentheses expander using a reduction loop ────────────
+// Strategy: find the innermost () first (no nested parens inside), expand it,
+// repeat until no parens remain. This handles arbitrary nesting depth.
+function expandParens(s) {
+  s = s.replace(/\s/g,'').replace(/²/g,'^2');
+ 
+  // Normalise implicit multiplication: 3(...) → 3*(...)
+  s = s.replace(/([\d.x])(\()/g, '$1*$2');
+  // Handle unary minus before paren: -(...) → -1*(...)
+  s = s.replace(/([+\-]?)\*?\(\-/g, (m, sign) => (sign==='-'?'+':'-') + '1*('); 
+ 
+  let safety = 0;
+  while (s.includes('(') && safety++ < 50) {
+    // Find innermost group (no parens inside)
+    s = s.replace(/([+\-]?[\d.]*(?:\.\d+)?)\*?\(([^()]+)\)/g, (match, coeffStr, inner) => {
+      let coeff = 1;
+      if (coeffStr === '' || coeffStr === '+') coeff = 1;
+      else if (coeffStr === '-') coeff = -1;
+      else coeff = parseFloat(coeffStr) || 1;
+ 
+      // inner is a flat expression — distribute coeff into each term
+      // Normalise inner: make sure all terms have explicit signs
+      let norm = inner.replace(/\s/g,'');
+      // Prefix first term with + if no sign
+      if (norm[0] !== '+' && norm[0] !== '-') norm = '+' + norm;
+      // Split by top-level + and -
+      const terms = norm.match(/[+\-][^+\-]*/g) || [];
+      return terms.map(term => {
+        const sign = term[0] === '-' ? -1 : 1;
+        const body = term.slice(1);
+        // body could be k, kx, kx^2
+        if (body.includes('x^2')) {
+          const k = parseFloat(body.replace('x^2','')) || 1;
+          return fmtNum(coeff * sign * k) + 'x^2';
+        } else if (body.includes('x')) {
+          const k = parseFloat(body.replace('x','')) || 1;
+          const result = coeff * sign * k;
+          return (result >= 0 ? '+' : '') + fmtNum(result) + 'x';
+        } else {
+          const k = parseFloat(body) || 0;
+          const result = coeff * sign * k;
+          return (result >= 0 ? '+' : '') + fmtNum(result);
+        }
+      }).join('');
+    });
+  }
+  // Clean up: remove leading +
+  s = s.replace(/^\+/, '');
+  return s;
+}
+ 
+// ─── Quadratic ───────────────────────────────────────────────────────────────
+function solveQuadratic(raw) {
+  let s = raw.replace(/\s/g,'').replace(/²/g,'^2').replace(/x\^2/g,'X2');
+  const sides = s.split('=');
+  if (sides.length !== 2) throw new Error('Need = sign');
+ 
+  // move everything to left: ax²+bx+c=0
+  function parsePoly(expr) {
+    let e = expr.replace(/X2/g,'x^2');
+    let a2=0, a1=0, a0=0;
+    const terms = (e.match(/[+-]?[^+-]+/g)||[]);
+    terms.forEach(t => {
+      t = t.trim();
+      if (!t) return;
+      if (t.includes('x^2')) {
+        const c = t.replace('x^2',''); a2 += c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||1;
+      } else if (t.includes('x')) {
+        const c = t.replace('x',''); a1 += c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||1;
+      } else {
+        a0 += parseFloat(t)||0;
+      }
+    });
+    return {a2,a1,a0};
+  }
+ 
+  const L = parsePoly(sides[0].replace(/X2/g,'x^2'));
+  const R = parsePoly(sides[1].replace(/X2/g,'x^2'));
+  const a = L.a2 - R.a2, b = L.a1 - R.a1, c = L.a0 - R.a0;
+ 
+  const disc = b*b - 4*a*c;
+  const steps = [
+    `Start with: <span class="step-math">${raw}</span>`,
+    `Standard form: <span class="step-math">${fmtNum(a)}x² + ${fmtNum(b)}x + ${fmtNum(c)} = 0</span>`,
+    `Use quadratic formula: <span class="step-math">x = (−b ± √(b²−4ac)) / 2a</span>`,
+    `Discriminant: <span class="step-math">b²−4ac = ${fmtNum(b*b)} − ${fmtNum(4*a*c)} = ${fmtNum(disc)}</span>`,
+  ];
+ 
+  let answer;
+  if (disc < 0) {
+    steps.push(`Discriminant is negative → <strong>no real solutions</strong>`);
+    answer = 'No real solutions';
+  } else if (disc === 0) {
+    const x = -b / (2*a);
+    steps.push(`Discriminant = 0 → one repeated root`);
+    steps.push(`<span class="step-math">x = ${fmtNum(-b)} / ${fmtNum(2*a)} = ${fmtNum(x)}</span>`);
+    answer = 'x = ' + fmtNum(x);
+  } else {
+    const x1 = (-b + Math.sqrt(disc)) / (2*a);
+    const x2 = (-b - Math.sqrt(disc)) / (2*a);
+    steps.push(`√discriminant = √${fmtNum(disc)} = ${fmtNum(Math.sqrt(disc))}`);
+    steps.push(`<span class="step-math">x₁ = (${fmtNum(-b)} + ${fmtNum(Math.sqrt(disc))}) / ${fmtNum(2*a)} = ${fmtNum(x1)}</span>`);
+    steps.push(`<span class="step-math">x₂ = (${fmtNum(-b)} − ${fmtNum(Math.sqrt(disc))}) / ${fmtNum(2*a)} = ${fmtNum(x2)}</span>`);
+    answer = `x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}`;
+  }
+ 
+  return { type: 'Quadratic Equation', steps, answer };
+}
+ 
+// ─── Absolute Value ───────────────────────────────────────────────────────────
+function solveAbsValue(raw) {
+  const m = raw.match(/\|([^|]+)\|\s*=\s*(.+)/);
+  if (!m) throw new Error('Could not parse absolute value');
+  const inner = m[1].trim(), rhs = parseFloat(m[2].trim());
+  const steps = [
+    `Start with: <span class="step-math">${raw}</span>`,
+    `|expression| = k means expression = k or expression = −k`,
+    `Case 1: <span class="step-math">${inner} = ${fmtNum(rhs)}</span>`,
+    `Case 2: <span class="step-math">${inner} = ${fmtNum(-rhs)}</span>`,
+  ];
+ 
+  function solveSimpleLinear(eq) {
+    const sides = eq.split('=');
+    if (sides.length !== 2) return null;
+    const L = parseLinear(sides[0]), R = parseLinear(sides[1]);
+    const a = L.a - R.a, b = R.b - L.b;
+    return a !== 0 ? b/a : null;
+  }
+ 
+  const x1 = solveSimpleLinear(`${inner}=${fmtNum(rhs)}`);
+  const x2 = solveSimpleLinear(`${inner}=${fmtNum(-rhs)}`);
+ 
+  if (rhs < 0) {
+    steps.push('Right side is negative → no solution (absolute value is always ≥ 0)');
+    return { type: 'Absolute Value Equation', steps, answer: 'No solution' };
+  }
+ 
+  steps.push(`Solve Case 1: x = ${fmtNum(x1)}`);
+  steps.push(`Solve Case 2: x = ${fmtNum(x2)}`);
+ 
+  return {
+    type: 'Absolute Value Equation',
+    steps,
+    answer: x1 === x2 ? `x = ${fmtNum(x1)}` : `x = ${fmtNum(x1)}  or  x = ${fmtNum(x2)}`
+  };
+}
+ 
+// ─── Inequality ───────────────────────────────────────────────────────────────
+function solveInequality(raw) {
+  let s = raw.replace(/\s/g,'');
+  const ops = ['<=','>=','<','>'];
+  let op = '', sides;
+  for (const o of ops) {
+    if (s.includes(o)) { op = o; sides = s.split(o); break; }
+  }
+  if (!op) throw new Error('No inequality operator found');
+ 
+  const L = parseLinear(sides[0]), R = parseLinear(sides[1]);
+  let a = L.a - R.a, b = R.b - L.b;
+  let resultOp = op;
+ 
+  // if dividing by negative, flip
+  if (a < 0) {
+    a = -a; b = -b;
+    const flip = {'<':'>','>':'<','<=':'>=','>=':'<='};
+    resultOp = flip[op] || op;
+  }
+ 
+  const x = b / a;
+  const steps = [
+    `Start with: <span class="step-math">${raw}</span>`,
+    `Move x terms left, constants right`,
+    `<span class="step-math">${fmtNum(L.a-R.a)}x ${(R.b-L.b)>=0?'+':''} ${fmtNum(R.b-L.b)} ... wait, isolate x</span>`,
+    `Coefficient of x: <span class="step-math">${fmtNum(L.a-R.a)}</span> — divide both sides`,
+    `${(L.a-R.a)<0?'⚠️ Dividing by negative → flip inequality sign':''}`,
+    `Result: <span class="step-math">x ${resultOp} ${fmtNum(x)}</span>`,
+  ].filter(s=>s);
+ 
+  const intervalMap = {'<':'(−∞, ','>':`(${fmtNum(x)}, +∞)`,'<=':'(−∞, ','>=': `[${fmtNum(x)}, +∞)`};
+  const bracket = op === '<' ? ')' : op === '<=' ? ']' : '';
+  const interval = op === '>' ? `(${fmtNum(x)}, +∞)` : op === '>=' ? `[${fmtNum(x)}, +∞)` :
+    op === '<' ? `(−∞, ${fmtNum(x)})` : `(−∞, ${fmtNum(x)}]`;
+ 
+  return {
+    type: 'Inequality',
+    steps,
+    answer: `x ${resultOp} ${fmtNum(x)}  |  Interval: ${interval}`
+  };
+}
+ 
+// ─── Square Root equation ─────────────────────────────────────────────────────
+function solveSqrt(raw) {
+  const s = raw.replace(/\s/g,'');
+  const m = s.match(/[√]?\s*(?:sqrt\()?([\d.]*x?[+\-\d.]*)\)?\s*=\s*([+\-\d.]+)/i);
+  if (!m) throw new Error('Could not parse square root equation');
+  const inner = m[1], rhs = parseFloat(m[2]);
+  const rhs2 = rhs*rhs;
+  const steps = [
+    `Start with: <span class="step-math">${raw}</span>`,
+    `Square both sides to eliminate the square root`,
+    `<span class="step-math">${inner} = ${fmtNum(rhs2)}</span>`,
+  ];
+  const eq2 = `${inner}=${fmtNum(rhs2)}`;
+  const res = solveLinear(eq2);
+  const xVal = parseFloat(res.answer.replace('x=','').replace('x =',''));
+  steps.push(...res.steps.slice(1));
+  steps.push(`Verify: √(${inner.replace('x',fmtNum(xVal))}) = √${fmtNum(rhs2)} = ${fmtNum(Math.sqrt(rhs2))}`);
+  return { type: 'Square Root Equation', steps, answer: res.answer };
+}
+ 
+// ─── System of equations ──────────────────────────────────────────────────────
+function solveSystem(raw) {
+  const eqs = raw.split(/[,;\n]/).map(e=>e.trim()).filter(Boolean);
+  if (eqs.length < 2) throw new Error('Need two equations');
+ 
+  // Parse each eq as ax + by = c  (simple 2-var only)
+  function parseSysEq(eq) {
+    const sides = eq.split('=');
+    const lhs = sides[0], rhs = sides[1];
+    let ax=0, by=0;
+    const terms = lhs.match(/[+-]?[^+-]+/g)||[];
+    terms.forEach(t=>{
+      t=t.trim();
+      if (!t) return;
+      if (/x/.test(t)) { const c=t.replace('x',''); ax+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0; }
+      else if (/y/.test(t)) { const c=t.replace('y',''); by+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0; }
+    });
+    const c = parseFloat(rhs)||0;
+    return {ax, by, c};
+  }
+ 
+  const e1 = parseSysEq(eqs[0]), e2 = parseSysEq(eqs[1]);
+  const det = e1.ax*e2.by - e2.ax*e1.by;
+  if (Math.abs(det) < 1e-10) {
+    return { type: 'System of Equations', steps: ['The system has no unique solution (parallel or same lines).'], answer: 'No unique solution' };
+  }
+  const x = (e1.c*e2.by - e2.c*e1.by)/det;
+  const y = (e1.ax*e2.c - e2.ax*e1.c)/det;
+ 
+  const steps = [
+    `Equation 1: <span class="step-math">${eqs[0]}</span>`,
+    `Equation 2: <span class="step-math">${eqs[1]}</span>`,
+    `Use elimination method. Multiply equations to match coefficients.`,
+    `Determinant: <span class="step-math">D = ${fmtNum(e1.ax)}×${fmtNum(e2.by)} − ${fmtNum(e2.ax)}×${fmtNum(e1.by)} = ${fmtNum(det)}</span>`,
+    `<span class="step-math">x = (${fmtNum(e1.c)}×${fmtNum(e2.by)} − ${fmtNum(e2.c)}×${fmtNum(e1.by)}) / ${fmtNum(det)} = ${fmtNum(x)}</span>`,
+    `<span class="step-math">y = (${fmtNum(e1.ax)}×${fmtNum(e2.c)} − ${fmtNum(e2.ax)}×${fmtNum(e1.c)}) / ${fmtNum(det)} = ${fmtNum(y)}</span>`,
+    `Verify in Eq 1: ${fmtNum(e1.ax)}(${fmtNum(x)}) + ${fmtNum(e1.by)}(${fmtNum(y)}) = ${fmtNum(e1.ax*x+e1.by*y)} ✓`,
+  ];
+  return { type: 'System of Equations', steps, answer: `x = ${fmtNum(x)},  y = ${fmtNum(y)}` };
+}
+ 
+// ─── Numeric eval ─────────────────────────────────────────────────────────────
+function evaluateExpression(raw) {
+  const result = evalMath(raw);
+  return {
+    type: 'Expression',
+    steps: [
+      `Evaluate: <span class="step-math">${raw}</span>`,
+      `Apply order of operations (PEMDAS)`,
+      `Result: <span class="step-math">${fmtNum(result)}</span>`,
+    ],
+    answer: fmtNum(result)
+  };
+}
+ 
+function evaluateNumeric(raw) {
+  const sides = raw.split('=');
+  const L = evalMath(sides[0]), R = evalMath(sides[1]);
+  return {
+    type: 'Numeric Check',
+    steps: [
+      `Left side: <span class="step-math">${fmtNum(L)}</span>`,
+      `Right side: <span class="step-math">${fmtNum(R)}</span>`,
+      Math.abs(L-R) < 1e-9 ? '✓ Both sides are equal — statement is TRUE.' : '✗ Sides are not equal — statement is FALSE.'
+    ],
+    answer: Math.abs(L-R) < 1e-9 ? 'TRUE' : 'FALSE'
+  };
+}
+ 
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function openModal(eq) {
+  selectedModalOptions.clear();
+  document.querySelectorAll('.option-check').forEach(el => el.classList.remove('selected'));
+  document.getElementById('modal-eq-preview').textContent = eq;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+ 
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('placeholder').style.display = 'block';
+}
+ 
+function solveWithChoices() {
+  if (selectedModalOptions.size === 0) {
+    alert('Please select at least one option.');
+    return;
+  }
+  closeModal();
+  showSpinner();
+  setTimeout(() => {
+    const results = [];
+    if (selectedModalOptions.has('solve')) {
+      try { results.push(solveAuto(currentInput)); } catch(e) {}
+    }
+    if (selectedModalOptions.has('factor')) {
+      results.push(factorExpression(currentInput));
+    }
+    if (selectedModalOptions.has('expand')) {
+      results.push(expandExpression(currentInput));
+    }
+    if (selectedModalOptions.has('simplify')) {
+      results.push(simplifyExpression(currentInput));
+    }
+    if (selectedModalOptions.has('evaluate')) {
+      try { results.push(evaluateExpression(currentInput)); } catch(e) {}
+    }
+    if (selectedModalOptions.has('graph')) {
+      results.push(slopeIntercept(currentInput));
+    }
+    if (selectedModalOptions.has('inequality')) {
+      try { results.push(solveInequality(currentInput)); } catch(e) {}
+    }
+    if (selectedModalOptions.has('system')) {
+      try { results.push(solveSystem(currentInput)); } catch(e) {}
+    }
+ 
+    if (results.length === 0) {
+      showError('Could not solve with the selected options. Try rephrasing the problem.');
+      return;
+    }
+ 
+    const combined = results[0];
+    if (results.length > 1) {
+      combined.steps = results.flatMap((r,i) => [
+        `<strong>— ${r.type} —</strong>`,
+        ...r.steps
+      ]);
+      combined.answer = results.map(r => `[${r.type}] ${r.answer}`).join('  |  ');
+      combined.type = results.map(r=>r.type).join(' + ');
+    }
+    showResult(combined.type, combined.steps, combined.answer);
+  }, 200);
+}
+ 
+function factorExpression(raw) {
+  // Factor quadratic ax²+bx+c
+  const s = raw.replace(/\s/g,'').replace(/²/g,'^2');
+  const m = s.match(/([+-]?\d*)x\^?2([+-]\d*x)?([+-]\d+)?/);
+  if (!m) return { type: 'Factor', steps: [`Could not factor: ${raw}`], answer: 'Not factorable' };
+  const a = m[1]===''||m[1]===undefined?1:m[1]==='-'?-1:parseFloat(m[1]);
+  const bStr = m[2]||'0'; const b = parseFloat(bStr.replace('x',''))||0;
+  const c = parseFloat(m[3])||0;
+  const disc = b*b-4*a*c;
+  if (disc < 0) return { type: 'Factor', steps: ['Discriminant < 0 — cannot factor over reals'], answer: 'Not factorable over ℝ' };
+  const r1 = (-b+Math.sqrt(disc))/(2*a), r2 = (-b-Math.sqrt(disc))/(2*a);
+  return {
+    type: 'Factor',
+    steps: [
+      `Expression: <span class="step-math">${raw}</span>`,
+      `Find roots using quadratic formula`,
+      `Roots: x = ${fmtNum(r1)},  x = ${fmtNum(r2)}`,
+      `Factored form: <span class="step-math">${a===1?'':fmtNum(a)}(x − ${fmtNum(r1)})(x − ${fmtNum(r2)})</span>`,
+    ],
+    answer: `${a===1?'':fmtNum(a)}(x − ${fmtNum(r1)})(x − ${fmtNum(r2)})`
+  };
+}
+ 
+function expandExpression(raw) {
+  const expanded = expandParens(raw.replace(/\s/g,''));
+  return {
+    type: 'Expand',
+    steps: [`Original: <span class="step-math">${raw}</span>`, `Distribute terms`, `Result: <span class="step-math">${expanded}</span>`],
+    answer: expanded
+  };
+}
+ 
+function simplifyExpression(raw) {
+  try {
+    const s = raw.replace(/\s/g,'');
+    // If it has x, just clean it up
+    if (/x/.test(s)) {
+      return { type: 'Simplify', steps: [`Expression: <span class="step-math">${raw}</span>`, `Combine like terms`], answer: s };
+    }
+    const result = evalMath(s);
+    return { type: 'Simplify', steps: [`Expression: <span class="step-math">${raw}</span>`, `Evaluate: <span class="step-math">${fmtNum(result)}</span>`], answer: fmtNum(result) };
+  } catch(e) {
+    return { type: 'Simplify', steps: ['Could not simplify.'], answer: 'See steps' };
+  }
+}
+ 
+function slopeIntercept(raw) {
+  // Try to extract y=mx+b or convert ax+by=c
+  const s = raw.replace(/\s/g,'');
+  const m = s.match(/y=([+-]?\d*\.?\d*)x([+-]\d+\.?\d*)?/);
+  if (m) {
+    const slope = parseFloat(m[1])||1;
+    const intercept = parseFloat(m[2])||0;
+    return {
+      type: 'Slope-Intercept',
+      steps: [
+        `Equation: <span class="step-math">${raw}</span>`,
+        `Already in y = mx + b form`,
+        `Slope m = <span class="step-math">${fmtNum(slope)}</span>`,
+        `y-intercept b = <span class="step-math">${fmtNum(intercept)}</span>`,
+      ],
+      answer: `slope = ${fmtNum(slope)},  y-intercept = ${fmtNum(intercept)}`
+    };
+  }
+  // ax + by = c form
+  const L = parseLinear(s.split('=')[0]||s);
+  const c = parseFloat((s.split('=')||[])[1])||0;
+  const slope = -L.a / (L.b||1);
+  const intercept = c / (L.b||1);
+  return {
+    type: 'Slope-Intercept',
+    steps: [
+      `Equation: <span class="step-math">${raw}</span>`,
+      `Solve for y: <span class="step-math">y = ${fmtNum(slope)}x + ${fmtNum(intercept)}</span>`,
+      `Slope m = <span class="step-math">${fmtNum(slope)}</span>`,
+      `y-intercept b = <span class="step-math">${fmtNum(intercept)}</span>`,
+    ],
+    answer: `slope = ${fmtNum(slope)},  y-intercept = ${fmtNum(intercept)}`
+  };
+}
+ 
+// ─── History ──────────────────────────────────────────────────────────────────
+function addHistory(eq, ans) {
+  history.unshift({ eq, ans, ts: Date.now() });
+  history = history.slice(0, 10);
+  localStorage.setItem('alg1_history', JSON.stringify(history));
+  renderHistory();
+}
+ 
+function renderHistory() {
+  const section = document.getElementById('history-section');
+  const list = document.getElementById('history-list');
+  if (history.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = '';
+  history.forEach(h => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `<span class="history-eq">${h.eq}</span><span class="history-ans">${h.ans}</span>`;
+    item.onclick = () => {
+      document.getElementById('eq-input').value = h.eq;
+      handleSolve();
+    };
+    list.appendChild(item);
+  });
+}
+ 
+function clearHistory() {
+  history = [];
+  localStorage.removeItem('alg1_history');
+  renderHistory();
+}
+ 
 function copyAnswer() {
-  const ans = document.getElementById('answer-value').textContent;
-  navigator.clipboard.writeText(ans);
+  const val = document.getElementById('answer-value').textContent;
+  navigator.clipboard.writeText(val).then(() => {
+    const btn = document.querySelector('.copy-answer-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
 }
-
-// Minimal passcode fallback handling
-function keyPress(n) {}
-function keyDel() {}
+ 
+// Close modal on overlay click
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+ 
+// Init history
+renderHistory();
+ 
+// ─── Passcode ────────────────────────────────────────────────────────────────
+const PASSCODE = '5156';
+let passcodeEntry = '';
+ 
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.classList.remove('filled', 'error');
+    if (i < passcodeEntry.length) dot.classList.add('filled');
+  }
+}
+ 
+function keyPress(digit) {
+  if (passcodeEntry.length >= 4) return;
+  passcodeEntry += digit;
+  updateDots();
+  if (passcodeEntry.length === 4) {
+    setTimeout(checkPasscode, 120);
+  }
+}
+ 
+function keyDel() {
+  if (passcodeEntry.length === 0) return;
+  passcodeEntry = passcodeEntry.slice(0, -1);
+  updateDots();
+  document.getElementById('passcode-error').textContent = '';
+}
+ 
+function checkPasscode() {
+  if (passcodeEntry === PASSCODE) {
+    const overlay = document.getElementById('passcode-overlay');
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.classList.add('hidden'), 400);
+  } else {
+    const dots = document.querySelectorAll('.passcode-dot');
+    dots.forEach(d => { d.classList.remove('filled'); d.classList.add('error'); });
+    const card = document.getElementById('passcode-card');
+    card.classList.add('shake');
+    document.getElementById('passcode-error').textContent = 'Incorrect passcode. Try again.';
+    setTimeout(() => {
+      dots.forEach(d => d.classList.remove('error'));
+      card.classList.remove('shake');
+      passcodeEntry = '';
+      updateDots();
+    }, 700);
+  }
+}
+ 
+// Allow keyboard input on passcode screen
+document.addEventListener('keydown', function(e) {
+  if (document.getElementById('passcode-overlay').classList.contains('hidden')) return;
+  if (e.key >= '0' && e.key <= '9') keyPress(e.key);
+  if (e.key === 'Backspace') keyDel();
+});
 </script>
 </body>
 </html>
