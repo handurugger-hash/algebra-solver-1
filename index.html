@@ -517,9 +517,164 @@
     color: var(--green);
     white-space: nowrap;
   }
+
+  /* ── Passcode overlay ── */
+  #passcode-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(10, 11, 14, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  #passcode-overlay.hidden {
+    display: none;
+  }
+
+  .passcode-card {
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 2.2rem 2rem;
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    animation: modal-in 0.22s ease;
+  }
+
+  .passcode-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin: 0 auto 1.1rem;
+  }
+
+  .passcode-card h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--text0);
+  }
+
+  .passcode-card p {
+    font-size: 0.83rem;
+    color: var(--text2);
+    margin-bottom: 1.5rem;
+  }
+
+  .passcode-dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .passcode-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    background: transparent;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .passcode-dot.filled {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .passcode-dot.error {
+    background: var(--red);
+    border-color: var(--red);
+  }
+
+  .passcode-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.55rem;
+  }
+
+  .key-btn {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 0;
+    font-family: var(--mono);
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--text0);
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    user-select: none;
+  }
+
+  .key-btn:hover { background: var(--bg3); border-color: var(--border2); }
+  .key-btn:active { transform: scale(0.93); }
+
+  .key-btn.key-del {
+    font-size: 0.9rem;
+    color: var(--text1);
+  }
+
+  .key-btn.key-zero {
+    grid-column: 2;
+  }
+
+  .passcode-error-msg {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--red);
+    min-height: 1.1em;
+    transition: opacity 0.2s;
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-8px); }
+    40%      { transform: translateX(8px); }
+    60%      { transform: translateX(-5px); }
+    80%      { transform: translateX(5px); }
+  }
+
+  .shake { animation: shake 0.35s ease; }
 </style>
 </head>
 <body>
+
+<!-- Passcode Overlay -->
+<div id="passcode-overlay">
+  <div class="passcode-card" id="passcode-card">
+    <div class="passcode-icon">🔒</div>
+    <h2>Enter Passcode</h2>
+    <p>This solver is passcode protected.</p>
+    <div class="passcode-dots">
+      <div class="passcode-dot" id="dot-0"></div>
+      <div class="passcode-dot" id="dot-1"></div>
+      <div class="passcode-dot" id="dot-2"></div>
+      <div class="passcode-dot" id="dot-3"></div>
+    </div>
+    <div class="passcode-keypad">
+      <button class="key-btn" onclick="keyPress('1')">1</button>
+      <button class="key-btn" onclick="keyPress('2')">2</button>
+      <button class="key-btn" onclick="keyPress('3')">3</button>
+      <button class="key-btn" onclick="keyPress('4')">4</button>
+      <button class="key-btn" onclick="keyPress('5')">5</button>
+      <button class="key-btn" onclick="keyPress('6')">6</button>
+      <button class="key-btn" onclick="keyPress('7')">7</button>
+      <button class="key-btn" onclick="keyPress('8')">8</button>
+      <button class="key-btn" onclick="keyPress('9')">9</button>
+      <button class="key-btn key-zero" onclick="keyPress('0')">0</button>
+      <button class="key-btn key-del" onclick="keyDel()">⌫</button>
+    </div>
+    <div class="passcode-error-msg" id="passcode-error"></div>
+  </div>
+</div>
 
 <header>
   <div class="logo-bar">
@@ -1250,6 +1405,62 @@ document.getElementById('modal-overlay').addEventListener('click', function(e) {
 
 // Init history
 renderHistory();
+
+// ─── Passcode ────────────────────────────────────────────────────────────────
+const PASSCODE = '5156';
+let passcodeEntry = '';
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('dot-' + i);
+    dot.classList.remove('filled', 'error');
+    if (i < passcodeEntry.length) dot.classList.add('filled');
+  }
+}
+
+function keyPress(digit) {
+  if (passcodeEntry.length >= 4) return;
+  passcodeEntry += digit;
+  updateDots();
+  if (passcodeEntry.length === 4) {
+    setTimeout(checkPasscode, 120);
+  }
+}
+
+function keyDel() {
+  if (passcodeEntry.length === 0) return;
+  passcodeEntry = passcodeEntry.slice(0, -1);
+  updateDots();
+  document.getElementById('passcode-error').textContent = '';
+}
+
+function checkPasscode() {
+  if (passcodeEntry === PASSCODE) {
+    const overlay = document.getElementById('passcode-overlay');
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.classList.add('hidden'), 400);
+  } else {
+    const dots = document.querySelectorAll('.passcode-dot');
+    dots.forEach(d => { d.classList.remove('filled'); d.classList.add('error'); });
+    const card = document.getElementById('passcode-card');
+    card.classList.add('shake');
+    document.getElementById('passcode-error').textContent = 'Incorrect passcode. Try again.';
+    setTimeout(() => {
+      dots.forEach(d => d.classList.remove('error'));
+      card.classList.remove('shake');
+      passcodeEntry = '';
+      updateDots();
+    }, 700);
+  }
+}
+
+// Allow keyboard input on passcode screen
+document.addEventListener('keydown', function(e) {
+  if (document.getElementById('passcode-overlay').classList.contains('hidden')) return;
+  if (e.key >= '0' && e.key <= '9') keyPress(e.key);
+  if (e.key === 'Backspace') keyDel();
+});
 </script>
 </body>
-</html>
+</html>r
