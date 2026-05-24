@@ -82,13 +82,28 @@
     margin-top: 0.3rem;
   }
  
-  .solver-card {
+  /* ── Solver wrapper: positions the card + side panel together ── */
+  .solver-wrapper {
+    position: relative;
     width: 100%;
     max-width: 720px;
+  }
+ 
+  .solver-card {
+    width: 100%;
     background: var(--bg1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     overflow: hidden;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.2s;
+  }
+ 
+  /* When panel is open, right border glows to show connection */
+  .solver-card.panel-open {
+    border-right-color: var(--border2);
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   }
  
   .input-area {
@@ -177,11 +192,43 @@
     padding: 2rem 0;
   }
  
-  .result-block {
-    display: none;
-  }
- 
+  .result-block { display: none; }
   .result-block.visible { display: block; }
+ 
+  /* "Wrong answer?" nudge row shown after a result */
+  .rethink-row {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+  }
+  .rethink-row.visible { display: flex; }
+  .rethink-label {
+    font-size: 0.78rem;
+    color: var(--text2);
+    flex: 1;
+  }
+  .rethink-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: var(--sans);
+    color: var(--text1);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .rethink-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .rethink-btn svg { transition: transform 0.25s; }
+  .rethink-btn.panel-active svg { transform: rotate(180deg); }
  
   .result-type-badge {
     display: inline-flex;
@@ -294,10 +341,8 @@
     color: var(--red);
     display: none;
   }
- 
   .error-box.visible { display: block; }
  
-  /* Spinner */
   .spinner {
     display: none;
     width: 18px; height: 18px;
@@ -307,8 +352,127 @@
     animation: spin 0.6s linear infinite;
     margin: 0 auto;
   }
- 
   @keyframes spin { to { transform: rotate(360deg); } }
+ 
+  /* ── RE-SOLVE SIDE PANEL ─────────────────────────────────────────────────── */
+  .resolve-panel {
+    position: absolute;
+    top: 0;
+    left: 100%;           /* starts flush against right edge of card */
+    width: 220px;
+    height: 100%;
+    background: var(--bg1);
+    border: 1px solid var(--border2);
+    border-left: none;    /* shares the card's right border */
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* slide in from right */
+    transform: translateX(-8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1),
+                opacity 0.22s ease;
+    z-index: 0;
+  }
+ 
+  .resolve-panel.open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+ 
+  .rp-header {
+    padding: 0.9rem 1rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+ 
+  .rp-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 0.15rem;
+  }
+ 
+  .rp-eq {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+ 
+  .rp-options {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+ 
+  .rp-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+    user-select: none;
+  }
+ 
+  .rp-option:hover {
+    background: var(--bg2);
+    border-color: var(--border);
+  }
+ 
+  .rp-option.active {
+    background: rgba(79,142,247,0.1);
+    border-color: var(--accent);
+  }
+ 
+  .rp-option-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+ 
+  .rp-option-text {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text1);
+    line-height: 1.3;
+  }
+ 
+  .rp-option.active .rp-option-text { color: var(--text0); }
+ 
+  .rp-footer {
+    padding: 0.6rem 0.5rem 0.7rem;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+ 
+  .rp-solve-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.12s;
+  }
+  .rp-solve-btn:hover { opacity: 0.88; }
  
   /* Modal overlay */
   .modal-overlay {
@@ -321,7 +485,6 @@
     justify-content: center;
     padding: 1rem;
   }
- 
   .modal-overlay.open { display: flex; }
  
   .modal {
@@ -339,309 +502,114 @@
     to   { opacity: 1; transform: scale(1) translateY(0); }
   }
  
-  .modal h2 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-  }
- 
-  .modal .modal-sub {
-    font-size: 0.85rem;
-    color: var(--text1);
-    margin-bottom: 1.2rem;
-    line-height: 1.5;
-  }
- 
+  .modal h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .modal .modal-sub { font-size: 0.85rem; color: var(--text1); margin-bottom: 1.2rem; line-height: 1.5; }
   .modal .eq-preview {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.6rem 0.9rem;
-    font-family: var(--mono);
-    font-size: 0.95rem;
-    color: var(--accent);
-    margin-bottom: 1.2rem;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.6rem 0.9rem; font-family: var(--mono); font-size: 0.95rem;
+    color: var(--accent); margin-bottom: 1.2rem;
   }
  
-  .options-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-bottom: 1.2rem;
-  }
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.2rem; }
  
   .option-check {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.65rem 0.85rem;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    user-select: none;
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.65rem 0.85rem; cursor: pointer; transition: border-color 0.15s; user-select: none;
   }
- 
   .option-check:hover { border-color: var(--accent); }
   .option-check.selected { border-color: var(--accent); background: rgba(79,142,247,0.1); }
- 
   .option-check input[type=checkbox] { display: none; }
- 
   .check-box {
-    width: 16px; height: 16px;
-    border: 1.5px solid var(--border2);
-    border-radius: 4px;
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border: 1.5px solid var(--border2); border-radius: 4px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
     transition: background 0.12s, border-color 0.12s;
   }
- 
-  .option-check.selected .check-box {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
- 
+  .option-check.selected .check-box { background: var(--accent); border-color: var(--accent); }
   .check-box svg { display: none; }
   .option-check.selected .check-box svg { display: block; }
- 
-  .option-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text1);
-  }
- 
+  .option-label { font-size: 0.85rem; font-weight: 500; color: var(--text1); }
   .option-check.selected .option-label { color: var(--text0); }
  
-  .modal-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-  }
- 
+  .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
   .btn-cancel {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.55rem 1rem;
-    font-family: var(--sans);
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: var(--text1);
-    cursor: pointer;
-    transition: color 0.12s;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.55rem 1rem; font-family: var(--sans); font-size: 0.88rem;
+    font-weight: 500; color: var(--text1); cursor: pointer; transition: color 0.12s;
   }
- 
   .btn-cancel:hover { color: var(--text0); }
- 
   .btn-solve-modal {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none;
-    border-radius: 8px;
-    padding: 0.55rem 1.2rem;
-    font-family: var(--sans);
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: #fff;
-    cursor: pointer;
-    transition: opacity 0.12s;
+    border: none; border-radius: 8px; padding: 0.55rem 1.2rem;
+    font-family: var(--sans); font-size: 0.88rem; font-weight: 600;
+    color: #fff; cursor: pointer; transition: opacity 0.12s;
   }
- 
   .btn-solve-modal:hover { opacity: 0.88; }
  
   /* History */
-  .history-section {
-    width: 100%;
-    max-width: 720px;
-    margin-top: 1.5rem;
-  }
- 
-  .history-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.6rem;
-  }
- 
-  .history-title {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--text2);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
- 
-  .clear-history-btn {
-    background: none;
-    border: none;
-    font-family: var(--sans);
-    font-size: 0.78rem;
-    color: var(--text2);
-    cursor: pointer;
-    transition: color 0.12s;
-  }
- 
+  .history-section { width: 100%; max-width: 720px; margin-top: 1.5rem; }
+  .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+  .history-title { font-size: 0.78rem; font-weight: 500; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; }
+  .clear-history-btn { background: none; border: none; font-family: var(--sans); font-size: 0.78rem; color: var(--text2); cursor: pointer; transition: color 0.12s; }
   .clear-history-btn:hover { color: var(--red); }
- 
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
- 
+  .history-list { display: flex; flex-direction: column; gap: 0.4rem; }
   .history-item {
-    background: var(--bg1);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.6rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    cursor: pointer;
-    transition: border-color 0.12s;
+    background: var(--bg1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.6rem 1rem; display: flex; align-items: center;
+    justify-content: space-between; gap: 1rem; cursor: pointer; transition: border-color 0.12s;
   }
- 
   .history-item:hover { border-color: var(--border2); }
- 
-  .history-eq {
-    font-family: var(--mono);
-    font-size: 0.88rem;
-    color: var(--text1);
-  }
- 
-  .history-ans {
-    font-family: var(--mono);
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--green);
-    white-space: nowrap;
-  }
+  .history-eq { font-family: var(--mono); font-size: 0.88rem; color: var(--text1); }
+  .history-ans { font-family: var(--mono); font-size: 0.88rem; font-weight: 600; color: var(--green); white-space: nowrap; }
  
   /* ── Passcode overlay ── */
   #passcode-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
+    position: fixed; inset: 0; z-index: 999;
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
     background: rgba(10, 11, 14, 0.55);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   }
- 
-  #passcode-overlay.hidden {
-    display: none;
-  }
- 
+  #passcode-overlay.hidden { display: none; }
   .passcode-card {
-    background: var(--bg1);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-lg);
-    padding: 2.2rem 2rem;
-    width: 100%;
-    max-width: 340px;
-    text-align: center;
+    background: var(--bg1); border: 1px solid var(--border2); border-radius: var(--radius-lg);
+    padding: 2.2rem 2rem; width: 100%; max-width: 340px; text-align: center;
     animation: modal-in 0.22s ease;
   }
- 
   .passcode-icon {
     width: 52px; height: 52px;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    margin: 0 auto 1.1rem;
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 1.1rem;
   }
- 
-  .passcode-card h2 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin-bottom: 0.3rem;
-    color: var(--text0);
-  }
- 
-  .passcode-card p {
-    font-size: 0.83rem;
-    color: var(--text2);
-    margin-bottom: 1.5rem;
-  }
- 
-  .passcode-dots {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 1.5rem;
-  }
- 
+  .passcode-card h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text0); }
+  .passcode-card p { font-size: 0.83rem; color: var(--text2); margin-bottom: 1.5rem; }
+  .passcode-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 1.5rem; }
   .passcode-dot {
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border2);
-    background: transparent;
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1.5px solid var(--border2); background: transparent;
     transition: background 0.15s, border-color 0.15s;
   }
- 
-  .passcode-dot.filled {
-    background: var(--accent);
-    border-color: var(--accent);
-  }
- 
-  .passcode-dot.error {
-    background: var(--red);
-    border-color: var(--red);
-  }
- 
-  .passcode-keypad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.55rem;
-  }
- 
+  .passcode-dot.filled { background: var(--accent); border-color: var(--accent); }
+  .passcode-dot.error { background: var(--red); border-color: var(--red); }
+  .passcode-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem; }
   .key-btn {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.85rem 0;
-    font-family: var(--mono);
-    font-size: 1.15rem;
-    font-weight: 500;
-    color: var(--text0);
-    cursor: pointer;
-    transition: background 0.12s, border-color 0.12s, transform 0.08s;
-    user-select: none;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.85rem 0; font-family: var(--mono); font-size: 1.15rem; font-weight: 500;
+    color: var(--text0); cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s; user-select: none;
   }
- 
   .key-btn:hover { background: var(--bg3); border-color: var(--border2); }
   .key-btn:active { transform: scale(0.93); }
- 
-  .key-btn.key-del {
-    font-size: 0.9rem;
-    color: var(--text1);
-  }
- 
-  .key-btn.key-zero {
-    grid-column: 2;
-  }
- 
-  .passcode-error-msg {
-    margin-top: 1rem;
-    font-size: 0.8rem;
-    color: var(--red);
-    min-height: 1.1em;
-    transition: opacity 0.2s;
-  }
- 
+  .key-btn.key-del { font-size: 0.9rem; color: var(--text1); }
+  .key-btn.key-zero { grid-column: 2; }
+  .passcode-error-msg { margin-top: 1rem; font-size: 0.8rem; color: var(--red); min-height: 1.1em; }
   @keyframes shake {
     0%,100% { transform: translateX(0); }
-    20%      { transform: translateX(-8px); }
-    40%      { transform: translateX(8px); }
-    60%      { transform: translateX(-5px); }
-    80%      { transform: translateX(5px); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
   }
- 
   .shake { animation: shake 0.35s ease; }
 </style>
 </head>
@@ -684,29 +652,54 @@
   <p class="subtitle">Step-by-step solutions · Any Algebra 1 problem</p>
 </header>
  
-<div class="solver-card">
-  <div class="input-area">
-    <div class="input-label">Enter your problem</div>
-    <div class="input-row">
-      <input id="eq-input" type="text" placeholder="e.g.  2x + 5 = 13  or  x² - 9 = 0" autocomplete="off" spellcheck="false" />
-      <button id="solve-btn" onclick="handleSolve()">Solve →</button>
-    </div>
-    <div class="examples-row" id="examples-row"></div>
-  </div>
-  <div class="result-area">
-    <div class="result-placeholder" id="placeholder">Enter a problem above and press Solve.</div>
-    <div class="spinner" id="spinner"></div>
-    <div class="error-box" id="error-box"></div>
-    <div class="result-block" id="result-block">
-      <div class="result-type-badge"><span class="dot"></span><span id="result-type-label">Linear Equation</span></div>
-      <ul class="steps-list" id="steps-list"></ul>
-      <div class="answer-box">
-        <div>
-          <div class="answer-label">Answer</div>
-          <div class="answer-value" id="answer-value"></div>
-        </div>
-        <button class="copy-answer-btn" onclick="copyAnswer()">Copy</button>
+<!-- Solver card + side panel live inside one relative wrapper -->
+<div class="solver-wrapper">
+  <div class="solver-card" id="solver-card">
+    <div class="input-area">
+      <div class="input-label">Enter your problem</div>
+      <div class="input-row">
+        <input id="eq-input" type="text" placeholder="e.g.  2x + 5 = 13  or  x² - 9 = 0" autocomplete="off" spellcheck="false" />
+        <button id="solve-btn" onclick="handleSolve()">Solve →</button>
       </div>
+      <div class="examples-row" id="examples-row"></div>
+    </div>
+    <div class="result-area">
+      <div class="result-placeholder" id="placeholder">Enter a problem above and press Solve.</div>
+      <div class="spinner" id="spinner"></div>
+      <div class="error-box" id="error-box"></div>
+      <div class="result-block" id="result-block">
+        <div class="result-type-badge"><span class="dot"></span><span id="result-type-label">Linear Equation</span></div>
+        <ul class="steps-list" id="steps-list"></ul>
+        <div class="answer-box">
+          <div>
+            <div class="answer-label">Answer</div>
+            <div class="answer-value" id="answer-value"></div>
+          </div>
+          <button class="copy-answer-btn" onclick="copyAnswer()">Copy</button>
+        </div>
+        <!-- "Solved for the wrong thing?" nudge row -->
+        <div class="rethink-row" id="rethink-row">
+          <span class="rethink-label">Solved for the wrong thing?</span>
+          <button class="rethink-btn" id="rethink-btn" onclick="toggleResolvePanel()">
+            Try something else
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Side panel — slides out from the right edge of the card -->
+  <div class="resolve-panel" id="resolve-panel">
+    <div class="rp-header">
+      <div class="rp-title">Solve differently</div>
+      <div class="rp-eq" id="rp-eq-display"></div>
+    </div>
+    <div class="rp-options" id="rp-options"></div>
+    <div class="rp-footer">
+      <button class="rp-solve-btn" onclick="resolveWithOption()">Apply →</button>
     </div>
   </div>
 </div>
@@ -748,30 +741,45 @@ const EXAMPLES = [
 ];
  
 const MODAL_OPTIONS = [
-  { id: 'solve', label: 'Solve for x' },
-  { id: 'simplify', label: 'Simplify' },
-  { id: 'factor', label: 'Factor' },
-  { id: 'expand', label: 'Expand' },
-  { id: 'graph', label: 'Find slope/intercept' },
-  { id: 'system', label: 'Solve as system' },
-  { id: 'inequality', label: 'Solve inequality' },
-  { id: 'evaluate', label: 'Evaluate expression' },
+  { id: 'solve',      label: 'Solve for x' },
+  { id: 'simplify',  label: 'Simplify' },
+  { id: 'factor',    label: 'Factor' },
+  { id: 'expand',    label: 'Expand' },
+  { id: 'graph',     label: 'Find slope/intercept' },
+  { id: 'system',    label: 'Solve as system' },
+  { id: 'inequality',label: 'Solve inequality' },
+  { id: 'evaluate',  label: 'Evaluate expression' },
+];
+ 
+// ── Re-solve panel option definitions (context-aware, generated per equation) ──
+const ALL_RESOLVE_OPTIONS = [
+  { id: 'linear',     icon: '📐', label: 'Solve (linear)',        test: s => /x/.test(s) && s.includes('=') },
+  { id: 'quadratic',  icon: '📈', label: 'Solve (quadratic)',     test: s => /x\^?2|x²/.test(s) },
+  { id: 'factor',     icon: '✂️', label: 'Factor expression',    test: s => /x/.test(s) },
+  { id: 'expand',     icon: '📦', label: 'Expand & simplify',     test: s => s.includes('(') },
+  { id: 'inequality', icon: '⚖️', label: 'Solve as inequality',  test: s => /x/.test(s) },
+  { id: 'system',     icon: '🔗', label: 'Solve as system',       test: s => /,|\n|;/.test(s) || (s.includes('y') && s.includes('=')) },
+  { id: 'slope',      icon: '📉', label: 'Find slope/intercept',  test: s => s.includes('y') || s.includes('=') },
+  { id: 'rational',   icon: '🔢', label: 'Solve (rational)',      test: s => s.includes('/') },
+  { id: 'evaluate',   icon: '🧮', label: 'Evaluate numerically',  test: s => true },
+  { id: 'simplify',   icon: '✨', label: 'Simplify only',         test: s => /x/.test(s) },
+  { id: 'absvalue',   icon: '🔲', label: 'Solve (absolute val)',  test: s => /\|/.test(s) || /x/.test(s) },
+  { id: 'sqrt',       icon: '√',  label: 'Solve (square root)',   test: s => /sqrt|√|x/.test(s) },
 ];
  
 let history = JSON.parse(localStorage.getItem('alg1_history') || '[]');
 let selectedModalOptions = new Set();
 let currentInput = '';
+let selectedResolveOption = null;
+let panelOpen = false;
  
-// Build examples chips
+// Build example chips
 const row = document.getElementById('examples-row');
 EXAMPLES.forEach(ex => {
   const chip = document.createElement('span');
   chip.className = 'ex-chip';
   chip.textContent = ex;
-  chip.onclick = () => {
-    document.getElementById('eq-input').value = ex;
-    handleSolve();
-  };
+  chip.onclick = () => { document.getElementById('eq-input').value = ex; handleSolve(); };
   row.appendChild(chip);
 });
  
@@ -798,10 +806,96 @@ document.getElementById('eq-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') handleSolve();
 });
  
+// Close panel when clicking outside the solver wrapper
+document.addEventListener('click', function(e) {
+  if (panelOpen && !e.target.closest('.solver-wrapper')) {
+    closeResolvePanel();
+  }
+});
+ 
+// ── Re-solve panel ────────────────────────────────────────────────────────────
+function buildResolvePanel(eq) {
+  const container = document.getElementById('rp-options');
+  document.getElementById('rp-eq-display').textContent = eq;
+  container.innerHTML = '';
+  selectedResolveOption = null;
+ 
+  const s = eq.replace(/\s/g, '');
+  const applicable = ALL_RESOLVE_OPTIONS.filter(o => o.test(s));
+ 
+  applicable.forEach(opt => {
+    const div = document.createElement('div');
+    div.className = 'rp-option';
+    div.dataset.id = opt.id;
+    div.innerHTML = `<span class="rp-option-icon">${opt.icon}</span><span class="rp-option-text">${opt.label}</span>`;
+    div.onclick = () => {
+      document.querySelectorAll('.rp-option').forEach(d => d.classList.remove('active'));
+      div.classList.add('active');
+      selectedResolveOption = opt.id;
+    };
+    container.appendChild(div);
+  });
+}
+ 
+function toggleResolvePanel() {
+  if (panelOpen) {
+    closeResolvePanel();
+  } else {
+    openResolvePanel();
+  }
+}
+ 
+function openResolvePanel() {
+  buildResolvePanel(currentInput);
+  document.getElementById('resolve-panel').classList.add('open');
+  document.getElementById('solver-card').classList.add('panel-open');
+  document.getElementById('rethink-btn').classList.add('panel-active');
+  panelOpen = true;
+}
+ 
+function closeResolvePanel() {
+  document.getElementById('resolve-panel').classList.remove('open');
+  document.getElementById('solver-card').classList.remove('panel-open');
+  document.getElementById('rethink-btn').classList.remove('panel-active');
+  panelOpen = false;
+}
+ 
+function resolveWithOption() {
+  if (!selectedResolveOption) return;
+  closeResolvePanel();
+  showSpinner();
+  setTimeout(() => {
+    try {
+      let result;
+      const raw = currentInput;
+      switch (selectedResolveOption) {
+        case 'linear':     result = solveLinear(raw); break;
+        case 'quadratic':  result = solveQuadratic(raw); break;
+        case 'factor':     result = factorExpression(raw); break;
+        case 'expand':     result = expandExpression(raw); break;
+        case 'inequality': result = solveInequality(raw); break;
+        case 'system':     result = solveSystem(raw); break;
+        case 'slope':      result = slopeIntercept(raw); break;
+        case 'rational':   result = solveRational(raw); break;
+        case 'evaluate':   result = evaluateExpression(raw); break;
+        case 'simplify':   result = simplifyExpression(raw); break;
+        case 'absvalue':   result = solveAbsValue(raw); break;
+        case 'sqrt':       result = solveSqrt(raw); break;
+        default:           result = solveAuto(raw);
+      }
+      showResult(result.type, result.steps, result.answer);
+    } catch(e) {
+      showError('Could not solve that way: ' + e.message);
+    }
+  }, 180);
+}
+ 
+// ── Display helpers ───────────────────────────────────────────────────────────
 function showError(msg) {
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('spinner').style.display = 'none';
   document.getElementById('result-block').classList.remove('visible');
+  document.getElementById('rethink-row').classList.remove('visible');
   const eb = document.getElementById('error-box');
   eb.textContent = msg;
   eb.classList.add('visible');
@@ -822,6 +916,7 @@ function showResult(typeLabel, steps, answer) {
   });
   document.getElementById('answer-value').textContent = answer;
   document.getElementById('result-block').classList.add('visible');
+  document.getElementById('rethink-row').classList.add('visible');
   addHistory(currentInput, answer);
 }
  
@@ -829,6 +924,7 @@ function showSpinner() {
   document.getElementById('placeholder').style.display = 'none';
   document.getElementById('error-box').classList.remove('visible');
   document.getElementById('result-block').classList.remove('visible');
+  document.getElementById('rethink-row').classList.remove('visible');
   document.getElementById('spinner').style.display = 'block';
 }
  
@@ -836,6 +932,7 @@ function handleSolve() {
   const raw = document.getElementById('eq-input').value.trim();
   if (!raw) return;
   currentInput = raw;
+  closeResolvePanel();
   showSpinner();
   setTimeout(() => {
     try {
@@ -854,29 +951,21 @@ function handleSolve() {
 }
  
 // ─── BUG 2 FIX: Rational equation pre-processor ──────────────────────────────
-// Detects variable-in-denominator fractions, finds LCD, clears denominators,
-// then hands the simplified linear/quadratic equation to the normal solvers.
 function hasVariableDenominator(s) {
-  // Look for /(...x...) or /expression-containing-x
   return /\/\s*[^\s+\-=*\/]*x[^\s+\-=*\/]*/i.test(s) ||
          /\/\s*\([^)]*x[^)]*\)/i.test(s);
 }
  
 function parseRationalTerms(s) {
-  // Split equation into LHS and RHS
   const eqIdx = s.indexOf('=');
   if (eqIdx === -1) return null;
   const lhs = s.slice(0, eqIdx);
   const rhs = s.slice(eqIdx + 1);
  
-  // Parse each side into rational terms: [{num: string, den: string}]
   function parseSideTerms(side) {
-    // Normalise: ensure terms start with sign
     let norm = side.replace(/\s/g,'');
     if (norm[0] !== '+' && norm[0] !== '-') norm = '+' + norm;
- 
     const terms = [];
-    // Split on top-level + and - (not inside parens)
     let depth = 0, start = 0;
     for (let i = 0; i < norm.length; i++) {
       if (norm[i] === '(') depth++;
@@ -887,7 +976,6 @@ function parseRationalTerms(s) {
       }
     }
     terms.push(norm.slice(start));
- 
     return terms.map(term => {
       term = term.replace(/^\+/, '');
       const slashIdx = term.indexOf('/');
@@ -896,10 +984,7 @@ function parseRationalTerms(s) {
     });
   }
  
-  return {
-    lhsTerms: parseSideTerms(lhs),
-    rhsTerms: parseSideTerms(rhs)
-  };
+  return { lhsTerms: parseSideTerms(lhs), rhsTerms: parseSideTerms(rhs) };
 }
  
 function stripOuterParens(s) {
@@ -915,16 +1000,8 @@ function solveRational(raw) {
  
   const allTerms = [...parsed.lhsTerms, ...parsed.rhsTerms];
   const allDens = allTerms.map(t => stripOuterParens(t.den));
- 
-  // For the specific common case: denominators are (x-a), (x+b), (x^2-c)
-  // We build LCD by collecting unique denominators
-  // Detect if any denominator is a product of the others (e.g. x^2-1 = (x-1)(x+1))
   const uniqueDens = [...new Set(allDens.filter(d => d !== '1'))];
- 
-  // Determine LCD string for display and for expansion
   let lcdDisplay = uniqueDens.join(' · ');
-  // For numeric computation, we'll symbolically multiply out
-  // We do this by tracking what polynomial each denominator represents
  
   const steps = [
     `Start with: <span class="step-math">${raw}</span>`,
@@ -933,36 +1010,23 @@ function solveRational(raw) {
     `Multiply every term by the LCD to clear all denominators`,
   ];
  
-  // Symbolically multiply: for each term, num * (LCD / den)
-  // We evaluate this by expanding the polynomial products numerically
-  // We'll use parseFlatPoly on each factor and multiply polynomials
- 
   function multiplyPolys(p1, p2) {
-    // p1 and p2 are {x2, x1, x0}; result may go up to x^2 for our cases
     return {
       x2: p1.x1*p2.x1 + p1.x2*p2.x0 + p1.x0*p2.x2,
-      x1: p1.x1*p2.x0 + p1.x0*p2.x1 + p1.x2*0, // ignoring x^3+
+      x1: p1.x1*p2.x0 + p1.x0*p2.x1,
       x0: p1.x0*p2.x0
     };
   }
  
   function parseDenPoly(den) {
-    // den may be like x-1, x+1, x^2-1, or a number
-    den = den.replace(/\^2/g,'x^2'); // normalise
+    den = den.replace(/\^2/g,'x^2');
     if (!den.includes('x')) return { x2:0, x1:0, x0: parseFloat(den)||1 };
     return parseFlatPoly(den);
   }
  
-  // Build LCD as a polynomial by multiplying unique denominators
-  // But only include a denominator in LCD if it's not already a multiple of others
-  // Simple approach: just multiply all unique dens together for LCD poly
-  let lcdPoly = { x2:0, x1:0, x0:1 }; // start at 1
- 
-  // Only use the minimal set: if one den is a product of two others, just use the others
-  // Heuristic: try all subsets; for up to 3 terms, just try removing each
+  let lcdPoly = { x2:0, x1:0, x0:1 };
   let effectiveDens = uniqueDens;
  
-  // Check if any den equals the expansion of product of the other two
   if (uniqueDens.length === 3) {
     for (let skip = 0; skip < 3; skip++) {
       const subset = uniqueDens.filter((_,i) => i !== skip);
@@ -970,9 +1034,7 @@ function solveRational(raw) {
       const p2 = parseDenPoly(subset[1]);
       const product = multiplyPolys(p1, p2);
       const full = parseDenPoly(uniqueDens[skip]);
-      if (Math.abs(product.x2 - full.x2) < 0.01 &&
-          Math.abs(product.x1 - full.x1) < 0.01 &&
-          Math.abs(product.x0 - full.x0) < 0.01) {
+      if (Math.abs(product.x2-full.x2)<0.01 && Math.abs(product.x1-full.x1)<0.01 && Math.abs(product.x0-full.x0)<0.01) {
         effectiveDens = subset;
         lcdDisplay = subset.join(' · ') + ` [= ${uniqueDens[skip]}]`;
         steps.splice(3, 0, `Note: <span class="step-math">${uniqueDens[skip]} = ${subset.join('·')}</span>, so LCD = <span class="step-math">${subset.join('·')}</span>`);
@@ -981,180 +1043,119 @@ function solveRational(raw) {
     }
   }
  
-  // Build LCD poly from effective dens
   lcdPoly = { x2:0, x1:0, x0:1 };
   for (const den of effectiveDens) {
     lcdPoly = multiplyPolys(lcdPoly, parseDenPoly(den));
   }
  
-  // For each term, compute: numerator_poly * (LCD / denominator_poly)
-  // Division of polynomials is hard symbolically, so we check if den divides LCD exactly
-  // by just doing the multiply and seeing if it cancels cleanly
   function polyDivide(lcdP, denP) {
-    // Returns quotient poly if exact, else null
     if (denP.x1 === 0 && denP.x2 === 0) {
       const k = denP.x0;
       return { x2: lcdP.x2/k, x1: lcdP.x1/k, x0: lcdP.x0/k };
     }
-    // quadratic / quadratic — only valid if they are identical (quotient = 1)
     if (denP.x2 !== 0) {
       if (Math.abs(lcdP.x2-denP.x2)<1e-9 && Math.abs(lcdP.x1-denP.x1)<1e-9 && Math.abs(lcdP.x0-denP.x0)<1e-9)
         return { x2:0, x1:0, x0:1 };
       return null;
     }
-    // linear divisor dx+e into ax²+bx+c
     if (denP.x2 === 0) {
-      const d = denP.x1, e = denP.x0;
-      const a = lcdP.x2, b = lcdP.x1, c = lcdP.x0;
-      if (Math.abs(a) < 1e-9) {
-        const q0 = b/d;
-        const rem = c - q0*e;
-        if (Math.abs(rem) < 1e-9) return { x2:0, x1:0, x0: q0 };
+      const d=denP.x1, e=denP.x0, a=lcdP.x2, b=lcdP.x1, c=lcdP.x0;
+      if (Math.abs(a)<1e-9) {
+        const q0=b/d, rem=c-q0*e;
+        if (Math.abs(rem)<1e-9) return {x2:0,x1:0,x0:q0};
         return null;
       }
-      const q1 = a/d;
-      const r1 = b - q1*e;
-      const q0 = r1/d;
-      const rem = c - q0*e;
-      if (Math.abs(rem) < 1e-9) return { x2:0, x1:q1, x0:q0 };
+      const q1=a/d, r1=b-q1*e, q0=r1/d, rem=c-q0*e;
+      if (Math.abs(rem)<1e-9) return {x2:0,x1:q1,x0:q0};
       return null;
     }
     return null;
   }
  
-  function termSign(numStr) {
-    const s = numStr.replace(/\s/g,'');
-    return s[0] === '-' ? -1 : 1;
-  }
- 
-  // Build new equation terms after multiplying by LCD
   const newLhsTerms = parsed.lhsTerms.map(t => {
     const denP = parseDenPoly(stripOuterParens(t.den));
     const factor = polyDivide(lcdPoly, denP);
     if (!factor) return null;
-    const numP = parseFlatPoly(t.num);
-    return multiplyPolys(numP, factor);
+    return multiplyPolys(parseFlatPoly(t.num), factor);
   });
  
   const newRhsTerms = parsed.rhsTerms.map(t => {
     const denP = parseDenPoly(stripOuterParens(t.den));
     const factor = polyDivide(lcdPoly, denP);
     if (!factor) return null;
-    const numP = parseFlatPoly(t.num);
-    return multiplyPolys(numP, factor);
+    return multiplyPolys(parseFlatPoly(t.num), factor);
   });
  
   if (newLhsTerms.includes(null) || newRhsTerms.includes(null)) {
-    // Fallback: can't simplify symbolically, warn and try normal solver
     throw new Error('Could not symbolically clear denominators');
   }
  
-  // Sum both sides
   const lhsSum = newLhsTerms.reduce(polyAdd, polyZero());
   const rhsSum = newRhsTerms.reduce(polyAdd, polyZero());
+  steps.push(`After clearing denominators: <span class="step-math">${polyToString(lhsSum)} = ${polyToString(rhsSum)}</span>`);
  
-  const simplifiedLhs = polyToString(lhsSum);
-  const simplifiedRhs = polyToString(rhsSum);
- 
-  steps.push(`After clearing denominators: <span class="step-math">${simplifiedLhs} = ${simplifiedRhs}</span>`);
- 
-  // Now solve the simplified equation
-  // Move everything to LHS: LHS - RHS = 0
-  const combined = { x2: lhsSum.x2 - rhsSum.x2, x1: lhsSum.x1 - rhsSum.x1, x0: lhsSum.x0 - rhsSum.x0 };
+  const combined = { x2: lhsSum.x2-rhsSum.x2, x1: lhsSum.x1-rhsSum.x1, x0: lhsSum.x0-rhsSum.x0 };
  
   if (Math.abs(combined.x2) > 1e-9) {
-    // It's quadratic — but after rational simplification it may cancel
-    // Try to factor / solve
-    const a = combined.x2, b = combined.x1, c = combined.x0;
-    const disc = b*b - 4*a*c;
-    steps.push(`Combine like terms, move all to left: <span class="step-math">${polyToString(combined)} = 0</span>`);
-    steps.push(`Use quadratic formula: discriminant = ${fmtNum(disc)}`);
+    const a=combined.x2, b=combined.x1, c=combined.x0;
+    const disc = b*b-4*a*c;
+    steps.push(`Combine like terms: <span class="step-math">${polyToString(combined)} = 0</span>`);
+    steps.push(`Discriminant = ${fmtNum(disc)}`);
     let answer;
     if (disc < 0) { answer = 'No real solutions'; }
     else if (Math.abs(disc) < 1e-9) {
-      const x = -b/(2*a);
+      const x=-b/(2*a);
       steps.push(`<span class="step-math">x = ${fmtNum(x)}</span>`);
       answer = 'x = ' + fmtNum(x);
     } else {
-      const x1 = (-b+Math.sqrt(disc))/(2*a), x2 = (-b-Math.sqrt(disc))/(2*a);
+      const x1=(-b+Math.sqrt(disc))/(2*a), x2=(-b-Math.sqrt(disc))/(2*a);
       steps.push(`<span class="step-math">x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}</span>`);
-      // Check for extraneous solutions (denominator = 0)
-      const restrictions = uniqueDens.map(d => {
-        const dp = parseDenPoly(d);
-        if (dp.x1 !== 0) return -dp.x0/dp.x1;
-        return null;
-      }).filter(v => v !== null);
-      const valid = [x1, x2].filter(x => !restrictions.some(r => Math.abs(x-r) < 1e-9));
-      if (valid.length === 0) { answer = 'No valid solutions (extraneous)'; }
-      else if (valid.length === 1) { answer = 'x = ' + fmtNum(valid[0]); steps.push(`Check: x = ${fmtNum(valid.length===2?x2:x1)} is extraneous (makes a denominator zero)`); }
-      else { answer = `x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}`; }
+      const restrictions = uniqueDens.map(d => { const dp=parseDenPoly(d); return dp.x1!==0?-dp.x0/dp.x1:null; }).filter(v=>v!==null);
+      const valid = [x1,x2].filter(x => !restrictions.some(r=>Math.abs(x-r)<1e-9));
+      if (valid.length===0) answer='No valid solutions (extraneous)';
+      else if (valid.length===1) { answer='x = '+fmtNum(valid[0]); steps.push(`Check: one root is extraneous (makes denominator zero)`); }
+      else answer=`x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}`;
     }
     return { type: 'Rational Equation', steps, answer };
   }
  
-  // Linear after clearing
-  const a = combined.x1, b = -combined.x0;
+  const a=combined.x1, b=-combined.x0;
   steps.push(`Isolate x: <span class="step-math">${fmtNum(a)}x = ${fmtNum(b)}</span>`);
   steps.push(`<span class="step-math">x = ${fmtNum(b)} ÷ ${fmtNum(a)} = ${fmtNum(b/a)}</span>`);
- 
-  // Check for extraneous solutions
-  const xVal = b/a;
-  const restrictions = uniqueDens.map(d => {
-    const dp = parseDenPoly(d);
-    if (dp.x1 !== 0) return -dp.x0/dp.x1;
-    return null;
-  }).filter(v => v !== null);
-  if (restrictions.some(r => Math.abs(xVal - r) < 1e-9)) {
+  const xVal=b/a;
+  const restrictions = uniqueDens.map(d=>{const dp=parseDenPoly(d);return dp.x1!==0?-dp.x0/dp.x1:null;}).filter(v=>v!==null);
+  if (restrictions.some(r=>Math.abs(xVal-r)<1e-9)) {
     steps.push(`⚠️ x = ${fmtNum(xVal)} makes a denominator zero — extraneous solution!`);
     return { type: 'Rational Equation', steps, answer: 'No solution (extraneous)' };
   }
- 
   return { type: 'Rational Equation', steps, answer: 'x = ' + fmtNum(xVal) };
 }
  
 // ─── CORE SOLVER ENGINE ──────────────────────────────────────────────────────
- 
 function solveAuto(raw) {
   const s = raw.trim();
- 
-  // System of equations (comma or line separated)
   if (/,|\n|;/.test(s) && s.includes('=')) return solveSystem(s);
- 
-  // Inequality
   if (/[<>]/.test(s)) return solveInequality(s);
- 
-  // Absolute value equation
   if (/\|/.test(s) && s.includes('=')) return solveAbsValue(s);
- 
-  // Equation (has =)
   if (s.includes('=')) {
-    // Rational equation (variable in denominator) — check BEFORE quadratic
     if (hasVariableDenominator(s)) return solveRational(s);
-    // Quadratic?
     if (/x\^?2|x²/.test(s)) return solveQuadratic(s);
-    // Linear with square root
     if (/sqrt|√/.test(s)) return solveSqrt(s);
-    // Linear
     if (/x/.test(s)) return solveLinear(s);
-    // Numeric equation
     return evaluateNumeric(s);
   }
- 
-  // Expression with no = — simplify/evaluate
   if (/x/.test(s)) return 'AMBIGUOUS';
   return evaluateExpression(s);
 }
  
-// ─── Tokenizer / basic math eval ─────────────────────────────────────────────
+// ─── Math helpers ─────────────────────────────────────────────────────────────
 function evalMath(expr) {
-  // Safe evaluator for numeric expressions
   const cleaned = expr
-    .replace(/\^/g, '**')
-    .replace(/√\s*\(([^)]+)\)/g, 'Math.sqrt($1)')
-    .replace(/√(\d+(\.\d+)?)/g, 'Math.sqrt($1)')
-    .replace(/sqrt\s*\(([^)]+)\)/gi, 'Math.sqrt($1)')
-    .replace(/abs\s*\(([^)]+)\)/gi, 'Math.abs($1)');
-  // eslint-disable-next-line no-new-func
+    .replace(/\^/g,'**')
+    .replace(/√\s*\(([^)]+)\)/g,'Math.sqrt($1)')
+    .replace(/√(\d+(\.\d+)?)/g,'Math.sqrt($1)')
+    .replace(/sqrt\s*\(([^)]+)\)/gi,'Math.sqrt($1)')
+    .replace(/abs\s*\(([^)]+)\)/gi,'Math.abs($1)');
   return Function('"use strict"; return (' + cleaned + ')')();
 }
  
@@ -1162,7 +1163,6 @@ function fmtNum(n) {
   if (!isFinite(n)) return 'undefined';
   const r = Math.round(n * 1e10) / 1e10;
   if (Number.isInteger(r)) return String(r);
-  // Try to express as fraction
   const frac = toFraction(r);
   if (frac) return frac;
   return r.toFixed(4).replace(/\.?0+$/, '');
@@ -1180,83 +1180,21 @@ function toFraction(decimal) {
   return null;
 }
  
-// ─── Linear solver ax + b = cx + d ──────────────────────────────────────────
-// parseLinear kept as thin wrapper for callers that use {a, b} shape
-function parseLinear(expr) {
-  const p = parseFlatPoly(expandParens(expr.replace(/\s/g,'')));
-  return { a: p.x1, b: p.x0 };
-}
- 
-function solveLinear(raw) {
-  let s = raw.replace(/\s/g,'');
-  const steps = [`Start with: <span class="step-math">${raw}</span>`];
- 
-  // Expand nested parentheses (Bug 1 fix)
-  const hasParens = s.includes('(');
-  const expanded = expandParens(s);
-  if (hasParens) {
-    // Show intermediate expansion steps
-    // Find the two sides of expanded form
-    const eqIdx = expanded.indexOf('=');
-    if (eqIdx !== -1) {
-      const expLeft = expanded.slice(0, eqIdx);
-      const expRight = expanded.slice(eqIdx+1);
-      steps.push(`Distribute/expand parentheses: <span class="step-math">${expLeft} = ${expRight}</span>`);
-    } else {
-      steps.push(`Distribute/expand parentheses: <span class="step-math">${expanded}</span>`);
-    }
-  }
- 
-  const sides = expanded.split('=');
-  if (sides.length !== 2) throw new Error('Invalid equation');
-  const L = parseFlatPoly(sides[0]);
-  const R = parseFlatPoly(sides[1]);
-  const a = L.x1 - R.x1;
-  const b = R.x0 - L.x0;
- 
-  if (hasParens) {
-    steps.push(`Collect like terms — move x's left, constants right`);
-  } else {
-    steps.push(`Move all <span class="step-math">x</span> terms to the left and constants to the right`);
-  }
-  steps.push(`Equation becomes: <span class="step-math">${fmtNum(a)}x = ${fmtNum(b)}</span>`);
- 
-  if (a === 0) {
-    if (Math.abs(b) < 1e-9) return { type: 'Identity', steps: ['Both sides are equal for all x.'], answer: 'All real numbers' };
-    return { type: 'No Solution', steps: ['The equation has no solution.'], answer: 'No solution' };
-  }
- 
-  steps.push(`Divide both sides by <span class="step-math">${fmtNum(a)}</span>`);
-  steps.push(`<span class="step-math">x = ${fmtNum(b)} ÷ ${fmtNum(a)} = ${fmtNum(b/a)}</span>`);
-  return { type: 'Linear Equation', steps, answer: 'x = ' + fmtNum(b/a) };
-}
- 
-// ─── Polynomial term helpers ─────────────────────────────────────────────────
-// Represents a polynomial as {x2, x1, x0} coefficients
+// ─── Polynomial helpers ───────────────────────────────────────────────────────
 function polyZero() { return {x2:0, x1:0, x0:0}; }
- 
 function polyAdd(a, b) { return {x2:a.x2+b.x2, x1:a.x1+b.x1, x0:a.x0+b.x0}; }
- 
 function polyScale(p, k) { return {x2:p.x2*k, x1:p.x1*k, x0:p.x0*k}; }
  
 function polyToString(p) {
   let s = '';
   if (p.x2 !== 0) s += (p.x2===1?'':p.x2===-1?'-':fmtNum(p.x2)) + 'x²';
-  if (p.x1 !== 0) {
-    if (s && p.x1 > 0) s += '+';
-    s += (p.x1===1?'':p.x1===-1?'-':fmtNum(p.x1)) + 'x';
-  }
-  if (p.x0 !== 0) {
-    if (s && p.x0 > 0) s += '+';
-    s += fmtNum(p.x0);
-  }
+  if (p.x1 !== 0) { if (s && p.x1>0) s+='+'; s+=(p.x1===1?'':p.x1===-1?'-':fmtNum(p.x1))+'x'; }
+  if (p.x0 !== 0) { if (s && p.x0>0) s+='+'; s+=fmtNum(p.x0); }
   return s || '0';
 }
  
-// Parse a flat (no-paren) expression string into a polynomial object
 function parseFlatPoly(expr) {
   let e = expr.replace(/\s/g,'');
-  // normalise: prepend coeff 1 where missing before x
   e = e.replace(/([+\-])x/g,'$11x').replace(/^x/,'1x').replace(/^\+x/,'+1x');
   const result = polyZero();
   const tokens = e.match(/[+\-]?[^+\-]+/g) || [];
@@ -1276,535 +1214,369 @@ function parseFlatPoly(expr) {
   return result;
 }
  
-// ─── BUG 1 FIX: Nested parentheses expander using a reduction loop ────────────
-// Strategy: find the innermost () first (no nested parens inside), expand it,
-// repeat until no parens remain. This handles arbitrary nesting depth.
+function parseLinear(expr) {
+  const p = parseFlatPoly(expandParens(expr.replace(/\s/g,'')));
+  return { a: p.x1, b: p.x0 };
+}
+ 
+// ─── BUG 1 FIX: Nested parentheses expander ──────────────────────────────────
 function expandParens(s) {
   s = s.replace(/\s/g,'').replace(/²/g,'^2');
- 
-  // Normalise implicit multiplication: 3(...) → 3*(...)
   s = s.replace(/([\d.x])(\()/g, '$1*$2');
-  // Handle unary minus before paren: -(...) → -1*(...)
-  s = s.replace(/([+\-]?)\*?\(\-/g, (m, sign) => (sign==='-'?'+':'-') + '1*('); 
- 
+  s = s.replace(/([+\-]?)\*?\(\-/g, (m, sign) => (sign==='-'?'+':'-') + '1*(');
   let safety = 0;
   while (s.includes('(') && safety++ < 50) {
-    // Find innermost group (no parens inside)
     s = s.replace(/([+\-]?[\d.]*(?:\.\d+)?)\*?\(([^()]+)\)/g, (match, coeffStr, inner) => {
       let coeff = 1;
-      if (coeffStr === '' || coeffStr === '+') coeff = 1;
-      else if (coeffStr === '-') coeff = -1;
-      else coeff = parseFloat(coeffStr) || 1;
- 
-      // inner is a flat expression — distribute coeff into each term
-      // Normalise inner: make sure all terms have explicit signs
+      if (coeffStr===''||coeffStr==='+') coeff=1;
+      else if (coeffStr==='-') coeff=-1;
+      else coeff=parseFloat(coeffStr)||1;
       let norm = inner.replace(/\s/g,'');
-      // Prefix first term with + if no sign
-      if (norm[0] !== '+' && norm[0] !== '-') norm = '+' + norm;
-      // Split by top-level + and -
-      const terms = norm.match(/[+\-][^+\-]*/g) || [];
+      if (norm[0]!=='+'&&norm[0]!=='-') norm='+'+norm;
+      const terms = norm.match(/[+\-][^+\-]*/g)||[];
       return terms.map(term => {
-        const sign = term[0] === '-' ? -1 : 1;
+        const sign = term[0]==='-'?-1:1;
         const body = term.slice(1);
-        // body could be k, kx, kx^2
         if (body.includes('x^2')) {
-          const k = parseFloat(body.replace('x^2','')) || 1;
-          return fmtNum(coeff * sign * k) + 'x^2';
+          const k=parseFloat(body.replace('x^2',''))||1;
+          return fmtNum(coeff*sign*k)+'x^2';
         } else if (body.includes('x')) {
-          const k = parseFloat(body.replace('x','')) || 1;
-          const result = coeff * sign * k;
-          return (result >= 0 ? '+' : '') + fmtNum(result) + 'x';
+          const k=parseFloat(body.replace('x',''))||1;
+          const r=coeff*sign*k;
+          return (r>=0?'+':'')+fmtNum(r)+'x';
         } else {
-          const k = parseFloat(body) || 0;
-          const result = coeff * sign * k;
-          return (result >= 0 ? '+' : '') + fmtNum(result);
+          const k=parseFloat(body)||0;
+          const r=coeff*sign*k;
+          return (r>=0?'+':'')+fmtNum(r);
         }
       }).join('');
     });
   }
-  // Clean up: remove leading +
-  s = s.replace(/^\+/, '');
+  s = s.replace(/^\+/,'');
   return s;
 }
  
-// ─── Quadratic ───────────────────────────────────────────────────────────────
+// ─── Linear ───────────────────────────────────────────────────────────────────
+function solveLinear(raw) {
+  let s = raw.replace(/\s/g,'');
+  const steps = [`Start with: <span class="step-math">${raw}</span>`];
+  const hasParens = s.includes('(');
+  const expanded = expandParens(s);
+  if (hasParens) {
+    const eqIdx = expanded.indexOf('=');
+    if (eqIdx !== -1) {
+      steps.push(`Distribute/expand: <span class="step-math">${expanded.slice(0,eqIdx)} = ${expanded.slice(eqIdx+1)}</span>`);
+    }
+  }
+  const sides = expanded.split('=');
+  if (sides.length !== 2) throw new Error('Invalid equation');
+  const L = parseFlatPoly(sides[0]), R = parseFlatPoly(sides[1]);
+  const a = L.x1 - R.x1, b = R.x0 - L.x0;
+  steps.push(hasParens ? `Collect like terms — x's left, constants right` : `Move all <span class="step-math">x</span> terms left, constants right`);
+  steps.push(`Equation becomes: <span class="step-math">${fmtNum(a)}x = ${fmtNum(b)}</span>`);
+  if (a === 0) {
+    if (Math.abs(b)<1e-9) return { type:'Identity', steps:['Both sides equal for all x.'], answer:'All real numbers' };
+    return { type:'No Solution', steps:['No solution.'], answer:'No solution' };
+  }
+  steps.push(`Divide both sides by <span class="step-math">${fmtNum(a)}</span>`);
+  steps.push(`<span class="step-math">x = ${fmtNum(b)} ÷ ${fmtNum(a)} = ${fmtNum(b/a)}</span>`);
+  return { type:'Linear Equation', steps, answer:'x = '+fmtNum(b/a) };
+}
+ 
+// ─── Quadratic ────────────────────────────────────────────────────────────────
 function solveQuadratic(raw) {
   let s = raw.replace(/\s/g,'').replace(/²/g,'^2').replace(/x\^2/g,'X2');
   const sides = s.split('=');
-  if (sides.length !== 2) throw new Error('Need = sign');
- 
-  // move everything to left: ax²+bx+c=0
+  if (sides.length!==2) throw new Error('Need = sign');
   function parsePoly(expr) {
-    let e = expr.replace(/X2/g,'x^2');
-    let a2=0, a1=0, a0=0;
-    const terms = (e.match(/[+-]?[^+-]+/g)||[]);
-    terms.forEach(t => {
-      t = t.trim();
-      if (!t) return;
-      if (t.includes('x^2')) {
-        const c = t.replace('x^2',''); a2 += c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||1;
-      } else if (t.includes('x')) {
-        const c = t.replace('x',''); a1 += c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||1;
-      } else {
-        a0 += parseFloat(t)||0;
-      }
+    let e=expr.replace(/X2/g,'x^2');
+    let a2=0,a1=0,a0=0;
+    (e.match(/[+-]?[^+-]+/g)||[]).forEach(t=>{
+      t=t.trim();if(!t)return;
+      if(t.includes('x^2')){const c=t.replace('x^2','');a2+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||1;}
+      else if(t.includes('x')){const c=t.replace('x','');a1+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||1;}
+      else a0+=parseFloat(t)||0;
     });
     return {a2,a1,a0};
   }
- 
-  const L = parsePoly(sides[0].replace(/X2/g,'x^2'));
-  const R = parsePoly(sides[1].replace(/X2/g,'x^2'));
-  const a = L.a2 - R.a2, b = L.a1 - R.a1, c = L.a0 - R.a0;
- 
-  const disc = b*b - 4*a*c;
-  const steps = [
+  const L=parsePoly(sides[0].replace(/X2/g,'x^2')),R=parsePoly(sides[1].replace(/X2/g,'x^2'));
+  const a=L.a2-R.a2, b=L.a1-R.a1, c=L.a0-R.a0;
+  const disc=b*b-4*a*c;
+  const steps=[
     `Start with: <span class="step-math">${raw}</span>`,
     `Standard form: <span class="step-math">${fmtNum(a)}x² + ${fmtNum(b)}x + ${fmtNum(c)} = 0</span>`,
-    `Use quadratic formula: <span class="step-math">x = (−b ± √(b²−4ac)) / 2a</span>`,
-    `Discriminant: <span class="step-math">b²−4ac = ${fmtNum(b*b)} − ${fmtNum(4*a*c)} = ${fmtNum(disc)}</span>`,
+    `Quadratic formula: <span class="step-math">x = (−b ± √(b²−4ac)) / 2a</span>`,
+    `Discriminant: <span class="step-math">b²−4ac = ${fmtNum(disc)}</span>`,
   ];
- 
   let answer;
-  if (disc < 0) {
-    steps.push(`Discriminant is negative → <strong>no real solutions</strong>`);
-    answer = 'No real solutions';
-  } else if (disc === 0) {
-    const x = -b / (2*a);
-    steps.push(`Discriminant = 0 → one repeated root`);
-    steps.push(`<span class="step-math">x = ${fmtNum(-b)} / ${fmtNum(2*a)} = ${fmtNum(x)}</span>`);
-    answer = 'x = ' + fmtNum(x);
-  } else {
-    const x1 = (-b + Math.sqrt(disc)) / (2*a);
-    const x2 = (-b - Math.sqrt(disc)) / (2*a);
-    steps.push(`√discriminant = √${fmtNum(disc)} = ${fmtNum(Math.sqrt(disc))}`);
-    steps.push(`<span class="step-math">x₁ = (${fmtNum(-b)} + ${fmtNum(Math.sqrt(disc))}) / ${fmtNum(2*a)} = ${fmtNum(x1)}</span>`);
-    steps.push(`<span class="step-math">x₂ = (${fmtNum(-b)} − ${fmtNum(Math.sqrt(disc))}) / ${fmtNum(2*a)} = ${fmtNum(x2)}</span>`);
-    answer = `x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}`;
+  if (disc<0){steps.push(`Negative discriminant → no real solutions`);answer='No real solutions';}
+  else if(disc===0){const x=-b/(2*a);steps.push(`<span class="step-math">x = ${fmtNum(x)}</span>`);answer='x = '+fmtNum(x);}
+  else{
+    const x1=(-b+Math.sqrt(disc))/(2*a),x2=(-b-Math.sqrt(disc))/(2*a);
+    steps.push(`<span class="step-math">x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}</span>`);
+    answer=`x₁ = ${fmtNum(x1)},  x₂ = ${fmtNum(x2)}`;
   }
- 
-  return { type: 'Quadratic Equation', steps, answer };
+  return { type:'Quadratic Equation', steps, answer };
 }
  
 // ─── Absolute Value ───────────────────────────────────────────────────────────
 function solveAbsValue(raw) {
   const m = raw.match(/\|([^|]+)\|\s*=\s*(.+)/);
   if (!m) throw new Error('Could not parse absolute value');
-  const inner = m[1].trim(), rhs = parseFloat(m[2].trim());
-  const steps = [
+  const inner=m[1].trim(), rhs=parseFloat(m[2].trim());
+  const steps=[
     `Start with: <span class="step-math">${raw}</span>`,
-    `|expression| = k means expression = k or expression = −k`,
+    `|expression| = k splits into two cases`,
     `Case 1: <span class="step-math">${inner} = ${fmtNum(rhs)}</span>`,
     `Case 2: <span class="step-math">${inner} = ${fmtNum(-rhs)}</span>`,
   ];
- 
-  function solveSimpleLinear(eq) {
-    const sides = eq.split('=');
-    if (sides.length !== 2) return null;
-    const L = parseLinear(sides[0]), R = parseLinear(sides[1]);
-    const a = L.a - R.a, b = R.b - L.b;
-    return a !== 0 ? b/a : null;
+  function solveSimpleLinear(eq){
+    const sides=eq.split('=');if(sides.length!==2)return null;
+    const L=parseLinear(sides[0]),R=parseLinear(sides[1]);
+    const a=L.a-R.a,b=R.b-L.b;return a!==0?b/a:null;
   }
- 
-  const x1 = solveSimpleLinear(`${inner}=${fmtNum(rhs)}`);
-  const x2 = solveSimpleLinear(`${inner}=${fmtNum(-rhs)}`);
- 
-  if (rhs < 0) {
-    steps.push('Right side is negative → no solution (absolute value is always ≥ 0)');
-    return { type: 'Absolute Value Equation', steps, answer: 'No solution' };
-  }
- 
-  steps.push(`Solve Case 1: x = ${fmtNum(x1)}`);
-  steps.push(`Solve Case 2: x = ${fmtNum(x2)}`);
- 
-  return {
-    type: 'Absolute Value Equation',
-    steps,
-    answer: x1 === x2 ? `x = ${fmtNum(x1)}` : `x = ${fmtNum(x1)}  or  x = ${fmtNum(x2)}`
-  };
+  const x1=solveSimpleLinear(`${inner}=${fmtNum(rhs)}`);
+  const x2=solveSimpleLinear(`${inner}=${fmtNum(-rhs)}`);
+  if(rhs<0){steps.push('RHS negative → no solution');return{type:'Absolute Value Equation',steps,answer:'No solution'};}
+  steps.push(`Case 1 → x = ${fmtNum(x1)}`);
+  steps.push(`Case 2 → x = ${fmtNum(x2)}`);
+  return{type:'Absolute Value Equation',steps,answer:x1===x2?`x = ${fmtNum(x1)}`:`x = ${fmtNum(x1)}  or  x = ${fmtNum(x2)}`};
 }
  
 // ─── Inequality ───────────────────────────────────────────────────────────────
 function solveInequality(raw) {
-  let s = raw.replace(/\s/g,'');
-  const ops = ['<=','>=','<','>'];
-  let op = '', sides;
-  for (const o of ops) {
-    if (s.includes(o)) { op = o; sides = s.split(o); break; }
-  }
-  if (!op) throw new Error('No inequality operator found');
- 
-  const L = parseLinear(sides[0]), R = parseLinear(sides[1]);
-  let a = L.a - R.a, b = R.b - L.b;
-  let resultOp = op;
- 
-  // if dividing by negative, flip
-  if (a < 0) {
-    a = -a; b = -b;
-    const flip = {'<':'>','>':'<','<=':'>=','>=':'<='};
-    resultOp = flip[op] || op;
-  }
- 
-  const x = b / a;
-  const steps = [
+  let s=raw.replace(/\s/g,'');
+  const ops=['<=','>=','<','>'];
+  let op='',sides;
+  for(const o of ops){if(s.includes(o)){op=o;sides=s.split(o);break;}}
+  if(!op) throw new Error('No inequality operator');
+  const L=parseLinear(sides[0]),R=parseLinear(sides[1]);
+  let a=L.a-R.a,b=R.b-L.b,resultOp=op;
+  if(a<0){a=-a;b=-b;const flip={'<':'>','>':'<','<=':'>=','>=':'<='};resultOp=flip[op]||op;}
+  const x=b/a;
+  const interval=op==='>'?`(${fmtNum(x)}, +∞)`:op==='>='?`[${fmtNum(x)}, +∞)`:op==='<'?`(−∞, ${fmtNum(x)})`: `(−∞, ${fmtNum(x)}]`;
+  const steps=[
     `Start with: <span class="step-math">${raw}</span>`,
     `Move x terms left, constants right`,
-    `<span class="step-math">${fmtNum(L.a-R.a)}x ${(R.b-L.b)>=0?'+':''} ${fmtNum(R.b-L.b)} ... wait, isolate x</span>`,
-    `Coefficient of x: <span class="step-math">${fmtNum(L.a-R.a)}</span> — divide both sides`,
-    `${(L.a-R.a)<0?'⚠️ Dividing by negative → flip inequality sign':''}`,
+    `${(L.a-R.a)<0?'⚠️ Dividing by negative — flip sign':''}Divide both sides by coefficient of x`,
     `Result: <span class="step-math">x ${resultOp} ${fmtNum(x)}</span>`,
   ].filter(s=>s);
- 
-  const intervalMap = {'<':'(−∞, ','>':`(${fmtNum(x)}, +∞)`,'<=':'(−∞, ','>=': `[${fmtNum(x)}, +∞)`};
-  const bracket = op === '<' ? ')' : op === '<=' ? ']' : '';
-  const interval = op === '>' ? `(${fmtNum(x)}, +∞)` : op === '>=' ? `[${fmtNum(x)}, +∞)` :
-    op === '<' ? `(−∞, ${fmtNum(x)})` : `(−∞, ${fmtNum(x)}]`;
- 
-  return {
-    type: 'Inequality',
-    steps,
-    answer: `x ${resultOp} ${fmtNum(x)}  |  Interval: ${interval}`
-  };
+  return{type:'Inequality',steps,answer:`x ${resultOp} ${fmtNum(x)}  |  ${interval}`};
 }
  
-// ─── Square Root equation ─────────────────────────────────────────────────────
+// ─── Square Root ──────────────────────────────────────────────────────────────
 function solveSqrt(raw) {
-  const s = raw.replace(/\s/g,'');
-  const m = s.match(/[√]?\s*(?:sqrt\()?([\d.]*x?[+\-\d.]*)\)?\s*=\s*([+\-\d.]+)/i);
-  if (!m) throw new Error('Could not parse square root equation');
-  const inner = m[1], rhs = parseFloat(m[2]);
-  const rhs2 = rhs*rhs;
-  const steps = [
+  const s=raw.replace(/\s/g,'');
+  const m=s.match(/[√]?\s*(?:sqrt\()?([\d.]*x?[+\-\d.]*)\)?\s*=\s*([+\-\d.]+)/i);
+  if(!m) throw new Error('Could not parse square root equation');
+  const inner=m[1],rhs=parseFloat(m[2]),rhs2=rhs*rhs;
+  const steps=[
     `Start with: <span class="step-math">${raw}</span>`,
-    `Square both sides to eliminate the square root`,
-    `<span class="step-math">${inner} = ${fmtNum(rhs2)}</span>`,
+    `Square both sides: <span class="step-math">${inner} = ${fmtNum(rhs2)}</span>`,
   ];
-  const eq2 = `${inner}=${fmtNum(rhs2)}`;
-  const res = solveLinear(eq2);
-  const xVal = parseFloat(res.answer.replace('x=','').replace('x =',''));
+  const res=solveLinear(`${inner}=${fmtNum(rhs2)}`);
+  const xVal=parseFloat(res.answer.replace('x=','').replace('x =',''));
   steps.push(...res.steps.slice(1));
-  steps.push(`Verify: √(${inner.replace('x',fmtNum(xVal))}) = √${fmtNum(rhs2)} = ${fmtNum(Math.sqrt(rhs2))}`);
-  return { type: 'Square Root Equation', steps, answer: res.answer };
+  steps.push(`Verify: √(${inner.replace('x',fmtNum(xVal))}) = ${fmtNum(Math.sqrt(rhs2))}`);
+  return{type:'Square Root Equation',steps,answer:res.answer};
 }
  
 // ─── System of equations ──────────────────────────────────────────────────────
 function solveSystem(raw) {
-  const eqs = raw.split(/[,;\n]/).map(e=>e.trim()).filter(Boolean);
-  if (eqs.length < 2) throw new Error('Need two equations');
- 
-  // Parse each eq as ax + by = c  (simple 2-var only)
-  function parseSysEq(eq) {
-    const sides = eq.split('=');
-    const lhs = sides[0], rhs = sides[1];
-    let ax=0, by=0;
-    const terms = lhs.match(/[+-]?[^+-]+/g)||[];
-    terms.forEach(t=>{
-      t=t.trim();
-      if (!t) return;
-      if (/x/.test(t)) { const c=t.replace('x',''); ax+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0; }
-      else if (/y/.test(t)) { const c=t.replace('y',''); by+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0; }
+  const eqs=raw.split(/[,;\n]/).map(e=>e.trim()).filter(Boolean);
+  if(eqs.length<2) throw new Error('Need two equations');
+  function parseSysEq(eq){
+    const sides=eq.split('=');const lhs=sides[0],rhs=sides[1];
+    let ax=0,by=0;
+    (lhs.match(/[+-]?[^+-]+/g)||[]).forEach(t=>{
+      t=t.trim();if(!t)return;
+      if(/x/.test(t)){const c=t.replace('x','');ax+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0;}
+      else if(/y/.test(t)){const c=t.replace('y','');by+=c===''||c==='+'?1:c==='-'?-1:parseFloat(c)||0;}
     });
-    const c = parseFloat(rhs)||0;
-    return {ax, by, c};
+    return{ax,by,c:parseFloat(rhs)||0};
   }
- 
-  const e1 = parseSysEq(eqs[0]), e2 = parseSysEq(eqs[1]);
-  const det = e1.ax*e2.by - e2.ax*e1.by;
-  if (Math.abs(det) < 1e-10) {
-    return { type: 'System of Equations', steps: ['The system has no unique solution (parallel or same lines).'], answer: 'No unique solution' };
-  }
-  const x = (e1.c*e2.by - e2.c*e1.by)/det;
-  const y = (e1.ax*e2.c - e2.ax*e1.c)/det;
- 
-  const steps = [
-    `Equation 1: <span class="step-math">${eqs[0]}</span>`,
-    `Equation 2: <span class="step-math">${eqs[1]}</span>`,
-    `Use elimination method. Multiply equations to match coefficients.`,
-    `Determinant: <span class="step-math">D = ${fmtNum(e1.ax)}×${fmtNum(e2.by)} − ${fmtNum(e2.ax)}×${fmtNum(e1.by)} = ${fmtNum(det)}</span>`,
-    `<span class="step-math">x = (${fmtNum(e1.c)}×${fmtNum(e2.by)} − ${fmtNum(e2.c)}×${fmtNum(e1.by)}) / ${fmtNum(det)} = ${fmtNum(x)}</span>`,
-    `<span class="step-math">y = (${fmtNum(e1.ax)}×${fmtNum(e2.c)} − ${fmtNum(e2.ax)}×${fmtNum(e1.c)}) / ${fmtNum(det)} = ${fmtNum(y)}</span>`,
-    `Verify in Eq 1: ${fmtNum(e1.ax)}(${fmtNum(x)}) + ${fmtNum(e1.by)}(${fmtNum(y)}) = ${fmtNum(e1.ax*x+e1.by*y)} ✓`,
+  const e1=parseSysEq(eqs[0]),e2=parseSysEq(eqs[1]);
+  const det=e1.ax*e2.by-e2.ax*e1.by;
+  if(Math.abs(det)<1e-10) return{type:'System of Equations',steps:['No unique solution.'],answer:'No unique solution'};
+  const x=(e1.c*e2.by-e2.c*e1.by)/det,y=(e1.ax*e2.c-e2.ax*e1.c)/det;
+  const steps=[
+    `Eq 1: <span class="step-math">${eqs[0]}</span>`,
+    `Eq 2: <span class="step-math">${eqs[1]}</span>`,
+    `Elimination — determinant: <span class="step-math">D = ${fmtNum(det)}</span>`,
+    `<span class="step-math">x = ${fmtNum(x)}</span>`,
+    `<span class="step-math">y = ${fmtNum(y)}</span>`,
+    `Verify in Eq 1: ${fmtNum(e1.ax*x+e1.by*y)} ✓`,
   ];
-  return { type: 'System of Equations', steps, answer: `x = ${fmtNum(x)},  y = ${fmtNum(y)}` };
+  return{type:'System of Equations',steps,answer:`x = ${fmtNum(x)},  y = ${fmtNum(y)}`};
 }
  
-// ─── Numeric eval ─────────────────────────────────────────────────────────────
-function evaluateExpression(raw) {
-  const result = evalMath(raw);
-  return {
-    type: 'Expression',
-    steps: [
-      `Evaluate: <span class="step-math">${raw}</span>`,
-      `Apply order of operations (PEMDAS)`,
-      `Result: <span class="step-math">${fmtNum(result)}</span>`,
-    ],
-    answer: fmtNum(result)
-  };
+// ─── Numeric ──────────────────────────────────────────────────────────────────
+function evaluateExpression(raw){
+  const result=evalMath(raw);
+  return{type:'Expression',steps:[`Evaluate: <span class="step-math">${raw}</span>`,`Result: <span class="step-math">${fmtNum(result)}</span>`],answer:fmtNum(result)};
 }
  
-function evaluateNumeric(raw) {
-  const sides = raw.split('=');
-  const L = evalMath(sides[0]), R = evalMath(sides[1]);
-  return {
-    type: 'Numeric Check',
-    steps: [
-      `Left side: <span class="step-math">${fmtNum(L)}</span>`,
-      `Right side: <span class="step-math">${fmtNum(R)}</span>`,
-      Math.abs(L-R) < 1e-9 ? '✓ Both sides are equal — statement is TRUE.' : '✗ Sides are not equal — statement is FALSE.'
-    ],
-    answer: Math.abs(L-R) < 1e-9 ? 'TRUE' : 'FALSE'
-  };
+function evaluateNumeric(raw){
+  const sides=raw.split('=');const L=evalMath(sides[0]),R=evalMath(sides[1]);
+  return{type:'Numeric Check',steps:[`Left: ${fmtNum(L)}`,`Right: ${fmtNum(R)}`,Math.abs(L-R)<1e-9?'✓ TRUE':'✗ FALSE'],answer:Math.abs(L-R)<1e-9?'TRUE':'FALSE'};
 }
  
 // ─── Modal ────────────────────────────────────────────────────────────────────
-function openModal(eq) {
+function openModal(eq){
   selectedModalOptions.clear();
-  document.querySelectorAll('.option-check').forEach(el => el.classList.remove('selected'));
-  document.getElementById('modal-eq-preview').textContent = eq;
+  document.querySelectorAll('.option-check').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('modal-eq-preview').textContent=eq;
   document.getElementById('modal-overlay').classList.add('open');
 }
  
-function closeModal() {
+function closeModal(){
   document.getElementById('modal-overlay').classList.remove('open');
-  document.getElementById('placeholder').style.display = 'block';
+  document.getElementById('placeholder').style.display='block';
 }
  
-function solveWithChoices() {
-  if (selectedModalOptions.size === 0) {
-    alert('Please select at least one option.');
-    return;
+function solveWithChoices(){
+  if(selectedModalOptions.size===0){alert('Select at least one option.');return;}
+  closeModal();showSpinner();
+  setTimeout(()=>{
+    const results=[];
+    if(selectedModalOptions.has('solve'))try{results.push(solveAuto(currentInput));}catch(e){}
+    if(selectedModalOptions.has('factor'))results.push(factorExpression(currentInput));
+    if(selectedModalOptions.has('expand'))results.push(expandExpression(currentInput));
+    if(selectedModalOptions.has('simplify'))results.push(simplifyExpression(currentInput));
+    if(selectedModalOptions.has('evaluate'))try{results.push(evaluateExpression(currentInput));}catch(e){}
+    if(selectedModalOptions.has('graph'))results.push(slopeIntercept(currentInput));
+    if(selectedModalOptions.has('inequality'))try{results.push(solveInequality(currentInput));}catch(e){}
+    if(selectedModalOptions.has('system'))try{results.push(solveSystem(currentInput));}catch(e){}
+    if(results.length===0){showError('Could not solve. Try rephrasing.');return;}
+    const combined=results[0];
+    if(results.length>1){
+      combined.steps=results.flatMap(r=>[`<strong>— ${r.type} —</strong>`,...r.steps]);
+      combined.answer=results.map(r=>`[${r.type}] ${r.answer}`).join('  |  ');
+      combined.type=results.map(r=>r.type).join(' + ');
+    }
+    showResult(combined.type,combined.steps,combined.answer);
+  },200);
+}
+ 
+function factorExpression(raw){
+  const s=raw.replace(/\s/g,'').replace(/²/g,'^2');
+  const m=s.match(/([+-]?\d*)x\^?2([+-]\d*x)?([+-]\d+)?/);
+  if(!m) return{type:'Factor',steps:[`Could not factor: ${raw}`],answer:'Not factorable'};
+  const a=m[1]===''||m[1]===undefined?1:m[1]==='-'?-1:parseFloat(m[1]);
+  const b=parseFloat((m[2]||'0').replace('x',''))||0;
+  const c=parseFloat(m[3])||0;
+  const disc=b*b-4*a*c;
+  if(disc<0) return{type:'Factor',steps:['Cannot factor over reals'],answer:'Not factorable over ℝ'};
+  const r1=(-b+Math.sqrt(disc))/(2*a),r2=(-b-Math.sqrt(disc))/(2*a);
+  return{type:'Factor',steps:[`Expression: <span class="step-math">${raw}</span>`,`Roots: x = ${fmtNum(r1)}, x = ${fmtNum(r2)}`,`Factored: <span class="step-math">${a===1?'':fmtNum(a)}(x − ${fmtNum(r1)})(x − ${fmtNum(r2)})</span>`],answer:`${a===1?'':fmtNum(a)}(x − ${fmtNum(r1)})(x − ${fmtNum(r2)})`};
+}
+ 
+function expandExpression(raw){
+  const expanded=expandParens(raw.replace(/\s/g,''));
+  return{type:'Expand',steps:[`Original: <span class="step-math">${raw}</span>`,`Result: <span class="step-math">${expanded}</span>`],answer:expanded};
+}
+ 
+function simplifyExpression(raw){
+  try{
+    const s=raw.replace(/\s/g,'');
+    if(/x/.test(s)) return{type:'Simplify',steps:[`Expression: <span class="step-math">${raw}</span>`,`Combined like terms`],answer:s};
+    const result=evalMath(s);
+    return{type:'Simplify',steps:[`Evaluate: <span class="step-math">${fmtNum(result)}</span>`],answer:fmtNum(result)};
+  }catch(e){return{type:'Simplify',steps:['Could not simplify.'],answer:'See steps'};}
+}
+ 
+function slopeIntercept(raw){
+  const s=raw.replace(/\s/g,'');
+  const m=s.match(/y=([+-]?\d*\.?\d*)x([+-]\d+\.?\d*)?/);
+  if(m){
+    const slope=parseFloat(m[1])||1,intercept=parseFloat(m[2])||0;
+    return{type:'Slope-Intercept',steps:[`Already y = mx + b form`,`Slope = ${fmtNum(slope)}`,`y-intercept = ${fmtNum(intercept)}`],answer:`slope = ${fmtNum(slope)},  y-int = ${fmtNum(intercept)}`};
   }
-  closeModal();
-  showSpinner();
-  setTimeout(() => {
-    const results = [];
-    if (selectedModalOptions.has('solve')) {
-      try { results.push(solveAuto(currentInput)); } catch(e) {}
-    }
-    if (selectedModalOptions.has('factor')) {
-      results.push(factorExpression(currentInput));
-    }
-    if (selectedModalOptions.has('expand')) {
-      results.push(expandExpression(currentInput));
-    }
-    if (selectedModalOptions.has('simplify')) {
-      results.push(simplifyExpression(currentInput));
-    }
-    if (selectedModalOptions.has('evaluate')) {
-      try { results.push(evaluateExpression(currentInput)); } catch(e) {}
-    }
-    if (selectedModalOptions.has('graph')) {
-      results.push(slopeIntercept(currentInput));
-    }
-    if (selectedModalOptions.has('inequality')) {
-      try { results.push(solveInequality(currentInput)); } catch(e) {}
-    }
-    if (selectedModalOptions.has('system')) {
-      try { results.push(solveSystem(currentInput)); } catch(e) {}
-    }
- 
-    if (results.length === 0) {
-      showError('Could not solve with the selected options. Try rephrasing the problem.');
-      return;
-    }
- 
-    const combined = results[0];
-    if (results.length > 1) {
-      combined.steps = results.flatMap((r,i) => [
-        `<strong>— ${r.type} —</strong>`,
-        ...r.steps
-      ]);
-      combined.answer = results.map(r => `[${r.type}] ${r.answer}`).join('  |  ');
-      combined.type = results.map(r=>r.type).join(' + ');
-    }
-    showResult(combined.type, combined.steps, combined.answer);
-  }, 200);
-}
- 
-function factorExpression(raw) {
-  // Factor quadratic ax²+bx+c
-  const s = raw.replace(/\s/g,'').replace(/²/g,'^2');
-  const m = s.match(/([+-]?\d*)x\^?2([+-]\d*x)?([+-]\d+)?/);
-  if (!m) return { type: 'Factor', steps: [`Could not factor: ${raw}`], answer: 'Not factorable' };
-  const a = m[1]===''||m[1]===undefined?1:m[1]==='-'?-1:parseFloat(m[1]);
-  const bStr = m[2]||'0'; const b = parseFloat(bStr.replace('x',''))||0;
-  const c = parseFloat(m[3])||0;
-  const disc = b*b-4*a*c;
-  if (disc < 0) return { type: 'Factor', steps: ['Discriminant < 0 — cannot factor over reals'], answer: 'Not factorable over ℝ' };
-  const r1 = (-b+Math.sqrt(disc))/(2*a), r2 = (-b-Math.sqrt(disc))/(2*a);
-  return {
-    type: 'Factor',
-    steps: [
-      `Expression: <span class="step-math">${raw}</span>`,
-      `Find roots using quadratic formula`,
-      `Roots: x = ${fmtNum(r1)},  x = ${fmtNum(r2)}`,
-      `Factored form: <span class="step-math">${a===1?'':fmtNum(a)}(x − ${fmtNum(r1)})(x − ${fmtNum(r2)})</span>`,
-    ],
-    answer: `${a===1?'':fmtNum(a)}(x − ${fmtNum(r1)})(x − ${fmtNum(r2)})`
-  };
-}
- 
-function expandExpression(raw) {
-  const expanded = expandParens(raw.replace(/\s/g,''));
-  return {
-    type: 'Expand',
-    steps: [`Original: <span class="step-math">${raw}</span>`, `Distribute terms`, `Result: <span class="step-math">${expanded}</span>`],
-    answer: expanded
-  };
-}
- 
-function simplifyExpression(raw) {
-  try {
-    const s = raw.replace(/\s/g,'');
-    // If it has x, just clean it up
-    if (/x/.test(s)) {
-      return { type: 'Simplify', steps: [`Expression: <span class="step-math">${raw}</span>`, `Combine like terms`], answer: s };
-    }
-    const result = evalMath(s);
-    return { type: 'Simplify', steps: [`Expression: <span class="step-math">${raw}</span>`, `Evaluate: <span class="step-math">${fmtNum(result)}</span>`], answer: fmtNum(result) };
-  } catch(e) {
-    return { type: 'Simplify', steps: ['Could not simplify.'], answer: 'See steps' };
-  }
-}
- 
-function slopeIntercept(raw) {
-  // Try to extract y=mx+b or convert ax+by=c
-  const s = raw.replace(/\s/g,'');
-  const m = s.match(/y=([+-]?\d*\.?\d*)x([+-]\d+\.?\d*)?/);
-  if (m) {
-    const slope = parseFloat(m[1])||1;
-    const intercept = parseFloat(m[2])||0;
-    return {
-      type: 'Slope-Intercept',
-      steps: [
-        `Equation: <span class="step-math">${raw}</span>`,
-        `Already in y = mx + b form`,
-        `Slope m = <span class="step-math">${fmtNum(slope)}</span>`,
-        `y-intercept b = <span class="step-math">${fmtNum(intercept)}</span>`,
-      ],
-      answer: `slope = ${fmtNum(slope)},  y-intercept = ${fmtNum(intercept)}`
-    };
-  }
-  // ax + by = c form
-  const L = parseLinear(s.split('=')[0]||s);
-  const c = parseFloat((s.split('=')||[])[1])||0;
-  const slope = -L.a / (L.b||1);
-  const intercept = c / (L.b||1);
-  return {
-    type: 'Slope-Intercept',
-    steps: [
-      `Equation: <span class="step-math">${raw}</span>`,
-      `Solve for y: <span class="step-math">y = ${fmtNum(slope)}x + ${fmtNum(intercept)}</span>`,
-      `Slope m = <span class="step-math">${fmtNum(slope)}</span>`,
-      `y-intercept b = <span class="step-math">${fmtNum(intercept)}</span>`,
-    ],
-    answer: `slope = ${fmtNum(slope)},  y-intercept = ${fmtNum(intercept)}`
-  };
+  const L=parseLinear(s.split('=')[0]||s),c=parseFloat((s.split('=')||[])[1])||0;
+  const slope=-L.a/(L.b||1),intercept=c/(L.b||1);
+  return{type:'Slope-Intercept',steps:[`Equation: <span class="step-math">${raw}</span>`,`y = ${fmtNum(slope)}x + ${fmtNum(intercept)}`],answer:`slope = ${fmtNum(slope)},  y-int = ${fmtNum(intercept)}`};
 }
  
 // ─── History ──────────────────────────────────────────────────────────────────
-function addHistory(eq, ans) {
-  history.unshift({ eq, ans, ts: Date.now() });
-  history = history.slice(0, 10);
-  localStorage.setItem('alg1_history', JSON.stringify(history));
+function addHistory(eq,ans){
+  history.unshift({eq,ans,ts:Date.now()});
+  history=history.slice(0,10);
+  localStorage.setItem('alg1_history',JSON.stringify(history));
   renderHistory();
 }
  
-function renderHistory() {
-  const section = document.getElementById('history-section');
-  const list = document.getElementById('history-list');
-  if (history.length === 0) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  list.innerHTML = '';
-  history.forEach(h => {
-    const item = document.createElement('div');
-    item.className = 'history-item';
-    item.innerHTML = `<span class="history-eq">${h.eq}</span><span class="history-ans">${h.ans}</span>`;
-    item.onclick = () => {
-      document.getElementById('eq-input').value = h.eq;
-      handleSolve();
-    };
+function renderHistory(){
+  const section=document.getElementById('history-section'),list=document.getElementById('history-list');
+  if(history.length===0){section.style.display='none';return;}
+  section.style.display='block';list.innerHTML='';
+  history.forEach(h=>{
+    const item=document.createElement('div');item.className='history-item';
+    item.innerHTML=`<span class="history-eq">${h.eq}</span><span class="history-ans">${h.ans}</span>`;
+    item.onclick=()=>{document.getElementById('eq-input').value=h.eq;handleSolve();};
     list.appendChild(item);
   });
 }
  
-function clearHistory() {
-  history = [];
-  localStorage.removeItem('alg1_history');
-  renderHistory();
-}
+function clearHistory(){history=[];localStorage.removeItem('alg1_history');renderHistory();}
  
-function copyAnswer() {
-  const val = document.getElementById('answer-value').textContent;
-  navigator.clipboard.writeText(val).then(() => {
-    const btn = document.querySelector('.copy-answer-btn');
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 1500);
+function copyAnswer(){
+  const val=document.getElementById('answer-value').textContent;
+  navigator.clipboard.writeText(val).then(()=>{
+    const btn=document.querySelector('.copy-answer-btn');
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);
   });
 }
  
-// Close modal on overlay click
-document.getElementById('modal-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
- 
-// Init history
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
 renderHistory();
  
 // ─── Passcode ────────────────────────────────────────────────────────────────
-const PASSCODE = '5156';
-let passcodeEntry = '';
+const PASSCODE='5156';
+let passcodeEntry='';
  
-function updateDots() {
-  for (let i = 0; i < 4; i++) {
-    const dot = document.getElementById('dot-' + i);
-    dot.classList.remove('filled', 'error');
-    if (i < passcodeEntry.length) dot.classList.add('filled');
+function updateDots(){
+  for(let i=0;i<4;i++){
+    const dot=document.getElementById('dot-'+i);
+    dot.classList.remove('filled','error');
+    if(i<passcodeEntry.length)dot.classList.add('filled');
   }
 }
  
-function keyPress(digit) {
-  if (passcodeEntry.length >= 4) return;
-  passcodeEntry += digit;
-  updateDots();
-  if (passcodeEntry.length === 4) {
-    setTimeout(checkPasscode, 120);
-  }
+function keyPress(digit){
+  if(passcodeEntry.length>=4)return;
+  passcodeEntry+=digit;updateDots();
+  if(passcodeEntry.length===4)setTimeout(checkPasscode,120);
 }
  
-function keyDel() {
-  if (passcodeEntry.length === 0) return;
-  passcodeEntry = passcodeEntry.slice(0, -1);
-  updateDots();
-  document.getElementById('passcode-error').textContent = '';
+function keyDel(){
+  if(passcodeEntry.length===0)return;
+  passcodeEntry=passcodeEntry.slice(0,-1);updateDots();
+  document.getElementById('passcode-error').textContent='';
 }
  
-function checkPasscode() {
-  if (passcodeEntry === PASSCODE) {
-    const overlay = document.getElementById('passcode-overlay');
-    overlay.style.transition = 'opacity 0.4s ease';
-    overlay.style.opacity = '0';
-    setTimeout(() => overlay.classList.add('hidden'), 400);
+function checkPasscode(){
+  if(passcodeEntry===PASSCODE){
+    const overlay=document.getElementById('passcode-overlay');
+    overlay.style.transition='opacity 0.4s ease';overlay.style.opacity='0';
+    setTimeout(()=>overlay.classList.add('hidden'),400);
   } else {
-    const dots = document.querySelectorAll('.passcode-dot');
-    dots.forEach(d => { d.classList.remove('filled'); d.classList.add('error'); });
-    const card = document.getElementById('passcode-card');
+    const dots=document.querySelectorAll('.passcode-dot');
+    dots.forEach(d=>{d.classList.remove('filled');d.classList.add('error');});
+    const card=document.getElementById('passcode-card');
     card.classList.add('shake');
-    document.getElementById('passcode-error').textContent = 'Incorrect passcode. Try again.';
-    setTimeout(() => {
-      dots.forEach(d => d.classList.remove('error'));
+    document.getElementById('passcode-error').textContent='Incorrect passcode. Try again.';
+    setTimeout(()=>{
+      dots.forEach(d=>d.classList.remove('error'));
       card.classList.remove('shake');
-      passcodeEntry = '';
-      updateDots();
-    }, 700);
+      passcodeEntry='';updateDots();
+    },700);
   }
 }
  
-// Allow keyboard input on passcode screen
-document.addEventListener('keydown', function(e) {
-  if (document.getElementById('passcode-overlay').classList.contains('hidden')) return;
-  if (e.key >= '0' && e.key <= '9') keyPress(e.key);
-  if (e.key === 'Backspace') keyDel();
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('passcode-overlay').classList.contains('hidden'))return;
+  if(e.key>='0'&&e.key<='9')keyPress(e.key);
+  if(e.key==='Backspace')keyDel();
 });
 </script>
 </body>
-</html>
